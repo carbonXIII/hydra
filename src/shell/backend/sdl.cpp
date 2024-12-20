@@ -76,7 +76,7 @@ namespace hydra::shell {
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
 
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, Config::Get().BAR_HEIGHT);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, Config::Get().WINDOW_HEIGHT);
 
 
 #ifndef NO_WAYLAND_EXTENSIONS
@@ -84,7 +84,7 @@ namespace hydra::shell {
     SDL_SetNumberProperty(props, LAYER_SHELL_PROP_ANCHORS, ANCHOR_BOTTOM | ANCHOR_LEFT | ANCHOR_RIGHT);
     SDL_SetNumberProperty(props, LAYER_SHELL_PROP_EXCLUSIVE_ZONE, Config::Get().BAR_HEIGHT);
 #else
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, Config::Get().BAR_WIDTH);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, Config::Get().WINDOW_WIDTH);
 #endif
 
     return props;
