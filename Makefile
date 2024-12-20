@@ -25,3 +25,6 @@ server/wayland:
 server/wayland-debug:
 	WAYLAND_DISPLAY=wayland-99 gdb --args ./build/src/server/hydra --wayland-host=${WAYLAND_DISPLAY} $(ARGS)
 .PHONY: server/wayland-debug
+
+test/shell-example:
+	./build/test/shell-example
