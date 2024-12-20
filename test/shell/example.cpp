@@ -13,13 +13,23 @@
 #include <shell/backend/imgui.h>
 #include <shell/statusline.h>
 #include <shell/table.h>
+#include <shell/search.h>
 
 using namespace hydra::shell;
 
 enum Event: hydra::Option::value_t {
+  ERROR = -1,
   QUIT,
   COUNTER,
   HELLO,
+  SEARCH,
+};
+
+static constexpr auto corpus = std::array {
+  "Lorem", "ipsum", "dolor",
+  "sit", "amet", "consectetur",
+  "adipiscing", "elit", "Nam",
+  "imperdiet",
 };
 
 int main() {
@@ -33,6 +43,7 @@ int main() {
 
   StatusLine status;
   std::optional<TablePrompt> table;
+  std::optional<SearchPrompt> search;
 
   Window window(context, Window::Properties::FromConfig());
 
@@ -56,6 +67,9 @@ int main() {
 
           if(auto res = table->try_result()) {
             switch(Event(*res)) {
+              case ERROR:
+                status.show("Undefined");
+                break;
               case QUIT:
                 done = true;
                 break;
@@ -66,6 +80,15 @@ int main() {
               case HELLO:
                 status.show("hello status line", std::chrono::milliseconds(5000));
                 break;
+              case SEARCH:
+                {
+                  hydra::Search opts;
+                  for(unsigned idx = 0; auto word: corpus) {
+                    opts.push_back(hydra::Option{idx++, word});
+                  }
+                  search.emplace(opts);
+                }
+                break;
               default:
                 break;
             }
@@ -74,13 +97,28 @@ int main() {
           }
         }
 
-        if(!table) {
+        if(search) {
+          search->handle_key(hydra::Key::Raw(e.key.raw));
+
+          if(auto _idx = search->try_result()) {
+            auto idx = *_idx;
+            if(idx >= 0 && idx < corpus.size()) {
+              status.show(fmt::format("search result: {}", corpus[idx]),
+                          std::chrono::milliseconds(5000));
+            }
+
+            search.reset();
+          }
+        }
+
+        if(!table && !search) {
           switch(e.key.key) {
             case SDLK_SPACE:
               table.emplace(hydra::Table{
                   std::pair{hydra::Key::Scancode(SDL_SCANCODE_H), hydra::Option{HELLO, "Hello"}},
                   std::pair{hydra::Key::Scancode(SDL_SCANCODE_C), hydra::Option{COUNTER, "Counter++"}},
                   std::pair{hydra::Key::Scancode(SDL_SCANCODE_Q), hydra::Option{QUIT, "Quit"}},
+                  std::pair{hydra::Key::Scancode(SDL_SCANCODE_SPACE), hydra::Option{SEARCH, "Search"}},
                 });
               break;
             default:
@@ -98,10 +136,12 @@ int main() {
       ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, hydra::Config::Get().BAR_HEIGHT));
       status.draw();
 
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - hydra::Config::Get().BAR_HEIGHT));
       if(table.has_value()) {
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - hydra::Config::Get().BAR_HEIGHT));
         table->draw();
+      } else if(search.has_value()) {
+        search->draw();
       }
 
       frame.should_show();

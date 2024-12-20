@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL3/SDL_keyboard.h>
+
 #include <chrono>
 #include <string>
 
@@ -67,4 +69,5 @@ namespace hydra {
   };
 
   using Table = std::vector<std::pair<Key, Option>>;
+  using Search = std::vector<Option>;
 }

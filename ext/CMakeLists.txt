@@ -11,5 +11,12 @@ FetchContent_DeclareEx(
   OVERRIDE_FIND_PACKAGE
 )
 
+FetchContent_DeclareEx(
+  rapidfuzz
+  GIT_REPOSITORY https://github.com/rapidfuzz/rapidfuzz-cpp.git
+  GIT_TAG        c6a3ac87c42ddf52f502dc3ed7001c8c2cefb900
+  OVERRIDE_FIND_PACKAGE
+)
+
 add_subdirectory(imgui EXCLUDE_FROM_ALL)
 add_subdirectory(wayland EXCLUDE_FROM_ALL)
