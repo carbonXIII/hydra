@@ -5,15 +5,14 @@
 #include <imgui/imgui.h>
 
 #include <hydra/config.h>
+#include <hydra/util/util.h>
 #include <hydra/backend/sdl.h>
 #ifndef NO_WAYLAND_EXTENSIONS
 #include <hydra/backend/layer_window.h>
 #endif
 
 #include <shell/backend/imgui.h>
-#include <shell/statusline.h>
-#include <shell/table.h>
-#include <shell/search.h>
+#include <shell/widget.h>
 
 using namespace hydra::shell;
 
@@ -38,12 +37,11 @@ int main() {
 #ifndef NO_WAYLAND_EXTENSIONS
   using Window = hydra::shell::LayerWindow;
 #else
-  using Window = hydra::Window;
+  using Window = hydra::shell::Window;
 #endif
 
   StatusLine status;
-  std::optional<TablePrompt> table;
-  std::optional<SearchPrompt> search;
+  std::optional<Prompt> prompt;
 
   Window window(context, Window::Properties::FromConfig());
 
@@ -62,63 +60,57 @@ int main() {
       if(e.type == SDL_EVENT_QUIT) {
         done = true;
       } else if(e.type == SDL_EVENT_KEY_DOWN) {
-        if(table) {
-          table->handle_key(hydra::Key::Raw(e.key.raw));
+        if(prompt.has_value()) {
+          handle_key(*prompt, hydra::Key::Raw(e.key.raw));
 
-          if(auto res = table->try_result()) {
-            switch(Event(*res)) {
-              case ERROR:
-                status.show("Undefined");
-                break;
-              case QUIT:
-                done = true;
-                break;
-              case COUNTER:
-                ++test_counter;
-                status.show(fmt::format("Counter: {}", test_counter));
-                break;
-              case HELLO:
-                status.show("hello status line", std::chrono::milliseconds(5000));
-                break;
-              case SEARCH:
-                {
-                  hydra::Search opts;
-                  for(unsigned idx = 0; auto word: corpus) {
-                    opts.push_back(hydra::Option{idx++, word});
+          if(auto res = try_result(*prompt)) {
+            bool is_table = std::holds_alternative<TablePrompt>(*prompt);
+            prompt.reset();
+
+            if(is_table) {
+              switch(Event(*res)) {
+                case ERROR:
+                  status.show("Undefined");
+                  break;
+                case QUIT:
+                  done = true;
+                  break;
+                case COUNTER:
+                  ++test_counter;
+                  status.show(fmt::format("Counter: {}", test_counter));
+                  break;
+                case HELLO:
+                  status.show("hello status line", std::chrono::milliseconds(5000));
+                  break;
+                case SEARCH:
+                  {
+                    hydra::Search opts;
+                    for(unsigned idx = 0; auto word: corpus) {
+                      opts.push_back(hydra::Option{idx++, word});
+                    }
+                    prompt.emplace(SearchPrompt{opts});
                   }
-                  search.emplace(opts);
-                }
-                break;
-              default:
-                break;
+                  break;
+                default:
+                  break;
+              }
+            } else {
+              if(auto idx = *res; idx >= 0 && idx < corpus.size()) {
+                status.show(fmt::format("search result: {}", corpus[idx]),
+                            std::chrono::milliseconds(5000));
+              }
             }
-
-            table.reset();
           }
-        }
-
-        if(search) {
-          search->handle_key(hydra::Key::Raw(e.key.raw));
-
-          if(auto _idx = search->try_result()) {
-            auto idx = *_idx;
-            if(idx >= 0 && idx < corpus.size()) {
-              status.show(fmt::format("search result: {}", corpus[idx]),
-                          std::chrono::milliseconds(5000));
-            }
-
-            search.reset();
-          }
-        }
-
-        if(!table && !search) {
+        } else {
           switch(e.key.key) {
             case SDLK_SPACE:
-              table.emplace(hydra::Table{
-                  std::pair{hydra::Key::Scancode(SDL_SCANCODE_H), hydra::Option{HELLO, "Hello"}},
-                  std::pair{hydra::Key::Scancode(SDL_SCANCODE_C), hydra::Option{COUNTER, "Counter++"}},
-                  std::pair{hydra::Key::Scancode(SDL_SCANCODE_Q), hydra::Option{QUIT, "Quit"}},
-                  std::pair{hydra::Key::Scancode(SDL_SCANCODE_SPACE), hydra::Option{SEARCH, "Search"}},
+              prompt.emplace(TablePrompt{
+                  hydra::Table{
+                    std::pair{hydra::Key::Scancode(SDL_SCANCODE_H), hydra::Option{HELLO, "Hello"}},
+                    std::pair{hydra::Key::Scancode(SDL_SCANCODE_C), hydra::Option{COUNTER, "Counter++"}},
+                    std::pair{hydra::Key::Scancode(SDL_SCANCODE_Q), hydra::Option{QUIT, "Quit"}},
+                    std::pair{hydra::Key::Scancode(SDL_SCANCODE_SPACE), hydra::Option{SEARCH, "Search"}},
+                  }
                 });
               break;
             default:
@@ -138,10 +130,8 @@ int main() {
 
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - hydra::Config::Get().BAR_HEIGHT));
-      if(table.has_value()) {
-        table->draw();
-      } else if(search.has_value()) {
-        search->draw();
+      if(prompt.has_value() && should_draw(*prompt)) {
+        draw(*prompt);
       }
 
       frame.should_show();

@@ -40,4 +40,11 @@ namespace hydra::util {
     return ret;
   }
 
+  template <typename... T>
+  struct overloaded: T... {
+    using T::operator()...;
+  };
+
+  template <typename... T>
+  overloaded(T...) -> overloaded<T...>;
 }

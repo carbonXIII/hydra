@@ -23,6 +23,10 @@ namespace hydra::shell {
       expiration = clock_t::now() + duration;
     }
 
+    bool should_draw() {
+      return true;
+    }
+
     void draw() {
       if(ImGui::Begin(util::label("window").c_str(), nullptr,
                       ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize)) {
