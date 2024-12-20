@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.28)
 
 project(hydra)
 
@@ -16,7 +16,7 @@ install(TARGETS hydra RUNTIME DESTINATION bin)
 set(CPACK_PACKAGE_CONTACT jordan@carbondoes.dev)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "libmiral5t64"
+  "libmiral7"
   "mir-graphics-drivers-desktop"
   "libfmt-dev"
 )

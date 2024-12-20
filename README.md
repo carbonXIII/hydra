@@ -14,8 +14,27 @@ Experimental Mir-based compositor
 - xwayland
 
 ## Building
+### Local
 ```
 make all
 ```
 
-For more details about the build targets, see the `Makefile` and `CMakeLists.txt`
+### Debian
+```
+make builder
+make deb
+```
+
+For more details about the build targets, see `Makefile` and `CMakeLists.txt`
+
+## Run
+### Installed
+```
+hydra
+```
+
+### Development
+```
+make server
+```
+

@@ -1,0 +1,19 @@
+services:
+  builder:
+    image: mir-toy/build
+    build:
+      context: .
+      dockerfile: build.container
+    volumes:
+      - ../:/src
+      - ../build/deb/:/build
+    command: |
+      bash -c '
+      env
+      cmake -B /build -S /src/
+
+      cd /build
+      cmake --build .
+
+      cpack -G DEB
+      '
