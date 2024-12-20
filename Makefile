@@ -28,3 +28,6 @@ server/wayland-debug:
 
 test/shell-example:
 	./build/test/shell-example
+
+test/shell-example-debug:
+	gdb --args ./build/test/shell-example

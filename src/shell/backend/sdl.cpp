@@ -2,7 +2,15 @@
 
 #include <fmt/format.h>
 
+#ifndef NO_WAYLAND_EXTENSIONS
+#include <hydra/backend/layer_shell_enum.h>
+#endif
+
+#include <hydra/config.h>
+
 namespace hydra::shell {
+  using Properties = Window::Properties;
+
   static void error_check(auto value) {
     if(!value) {
       throw std::runtime_error(fmt::format("SDL: {}", SDL_GetError()));
@@ -58,6 +66,27 @@ namespace hydra::shell {
   }
 
   Properties::operator SDL_PropertiesID() {
+    return props;
+  }
+
+  Window::Properties Window::Properties::FromConfig() {
+    Window::Properties props;
+
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_TRANSPARENT_BOOLEAN, true);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
+
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, Config::Get().BAR_HEIGHT);
+
+
+#ifndef NO_WAYLAND_EXTENSIONS
+    SDL_SetNumberProperty(props, LAYER_SHELL_PROP_LAYER, LAYER_OVERLAY);
+    SDL_SetNumberProperty(props, LAYER_SHELL_PROP_ANCHORS, ANCHOR_BOTTOM | ANCHOR_LEFT | ANCHOR_RIGHT);
+    SDL_SetNumberProperty(props, LAYER_SHELL_PROP_EXCLUSIVE_ZONE, Config::Get().BAR_HEIGHT);
+#else
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, Config::Get().BAR_WIDTH);
+#endif
+
     return props;
   }
 }

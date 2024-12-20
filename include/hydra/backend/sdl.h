@@ -52,6 +52,8 @@ namespace hydra::shell {
 
     operator SDL_PropertiesID();
 
+    static Properties FromConfig();
+
   private:
     SDL_PropertiesID props;
   };

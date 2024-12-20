@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON
 set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(ext)
+add_subdirectory(src/common)
 add_subdirectory(src/shell)
 add_subdirectory(src/server)
 add_subdirectory(test)

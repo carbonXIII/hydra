@@ -12,3 +12,4 @@ FetchContent_DeclareEx(
 )
 
 add_subdirectory(imgui EXCLUDE_FROM_ALL)
+add_subdirectory(wayland EXCLUDE_FROM_ALL)

@@ -1,29 +1,36 @@
 #include <fmt/core.h>
 
+#include <chrono>
+
+#include <imgui/imgui.h>
+
+#include <hydra/config.h>
 #include <hydra/backend/sdl.h>
+#ifndef NO_WAYLAND_EXTENSIONS
+#include <hydra/backend/layer_window.h>
+#endif
 
 #include <shell/backend/imgui.h>
-#include <imgui/imgui.h>
 
 using namespace hydra::shell;
 
-auto get_window_props() {
-  Window::Properties props;
-  SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_TRANSPARENT_BOOLEAN, true);
-  SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
-  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
-  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
-  return props;
-}
-
 int main() {
   SDLContext context;
-  Window window(context, get_window_props());
 
-  SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-  SDL_ShowWindow(window);
+#ifndef NO_WAYLAND_EXTENSIONS
+  using Window = hydra::shell::LayerWindow;
+#else
+  using Window = hydra::Window;
+#endif
+
+  Window window(context, Window::Properties::FromConfig());
 
   FrameContext frame_context(&window);
+
+  {
+    auto& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+  }
 
   bool done = false;
   while(!done) {
@@ -38,7 +45,10 @@ int main() {
     {
       auto frame = frame_context.start_frame();
 
-      if(ImGui::Begin("Hydra")) {
+      auto& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
+      if(ImGui::Begin("Hydra", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize)) {
         ImGui::Text("Hello imgui");
         ImGui::End();
       }
