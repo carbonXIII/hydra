@@ -21,6 +21,7 @@ namespace hydra::shell {
     Window(const SDLContext&, Properties&& props);
 
     SDL_Window* get();
+    SDL_GLContext gl_context();
 
     operator SDL_Window*();
 
@@ -33,7 +34,14 @@ namespace hydra::shell {
       }
     };
 
+    struct SDL_GLContext_Deleter {
+      void operator()(SDL_GLContext context) {
+        SDL_GL_DestroyContext(context);
+      }
+    };
+
     std::unique_ptr<SDL_Window, SDL_Window_Deleter> window;
+    std::unique_ptr<std::remove_pointer<SDL_GLContext>::type, SDL_GLContext_Deleter> _gl_context;
   };
 
   struct Window::Properties {

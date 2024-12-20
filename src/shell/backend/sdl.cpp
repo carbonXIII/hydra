@@ -1,5 +1,3 @@
-#include "SDL3/SDL_stdinc.h"
-#include "SDL3/SDL_video.h"
 #include <hydra/backend/sdl.h>
 
 #include <fmt/format.h>
@@ -35,6 +33,14 @@ namespace hydra::shell {
 
   SDL_Window* Window::get() {
     return window.get();
+  }
+
+  SDL_GLContext Window::gl_context() {
+    if(!_gl_context) {
+      _gl_context.reset(SDL_GL_CreateContext(get()));
+    }
+
+    return _gl_context.get();
   }
 
   Window::operator SDL_Window*() {

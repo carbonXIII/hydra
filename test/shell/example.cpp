@@ -1,8 +1,9 @@
-#include "SDL3/SDL_render.h"
-#include "SDL3/SDL_video.h"
 #include <fmt/core.h>
 
 #include <hydra/backend/sdl.h>
+
+#include <shell/backend/imgui.h>
+#include <imgui/imgui.h>
 
 using namespace hydra::shell;
 
@@ -20,20 +21,29 @@ int main() {
   Window window(context, get_window_props());
 
   SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-
   SDL_ShowWindow(window);
+
+  FrameContext frame_context(&window);
+
   bool done = false;
   while(!done) {
-    SDL_Event e;
-    while(SDL_PollEvent(&e)) {
+    frame_context.handle_events([&](SDL_Event const& e) {
       if(e.type == SDL_EVENT_QUIT) {
         done = true;
       } else if(e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_Q) {
         done = true;
       }
-    }
+    });
 
-    SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
+    {
+      auto frame = frame_context.start_frame();
+
+      if(ImGui::Begin("Hydra")) {
+        ImGui::Text("Hello imgui");
+        ImGui::End();
+      }
+
+      frame.should_show();
+    }
   }
 }

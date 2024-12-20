@@ -10,3 +10,5 @@ FetchContent_DeclareEx(
   GIT_TAG        eb3fc0684c9957de108df5b338307418b0130c3b
   OVERRIDE_FIND_PACKAGE
 )
+
+add_subdirectory(imgui EXCLUDE_FROM_ALL)
