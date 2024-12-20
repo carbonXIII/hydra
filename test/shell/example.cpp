@@ -11,6 +11,7 @@
 #endif
 
 #include <shell/backend/imgui.h>
+#include <shell/statusline.h>
 
 using namespace hydra::shell;
 
@@ -23,6 +24,8 @@ int main() {
   using Window = hydra::Window;
 #endif
 
+  StatusLine status;
+
   Window window(context, Window::Properties::FromConfig());
 
   FrameContext frame_context(&window);
@@ -33,12 +36,26 @@ int main() {
   }
 
   bool done = false;
+
+  int test_counter = 0;
   while(!done) {
     frame_context.handle_events([&](SDL_Event const& e) {
       if(e.type == SDL_EVENT_QUIT) {
         done = true;
-      } else if(e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_Q) {
-        done = true;
+      } else if(e.type == SDL_EVENT_KEY_DOWN) {
+        switch(e.key.key) {
+          case SDLK_Q:
+            done = true;
+            break;
+          case SDLK_H:
+            status.show("hello status line", std::chrono::milliseconds(5000));
+            break;
+          case SDLK_RETURN:
+            ++test_counter;
+            status.show(fmt::format("Counter: {}", test_counter));
+          default:
+            break;
+        }
       }
     });
 
@@ -48,10 +65,7 @@ int main() {
       auto& io = ImGui::GetIO();
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
-      if(ImGui::Begin("Hydra", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize)) {
-        ImGui::Text("Hello imgui");
-        ImGui::End();
-      }
+      status.draw();
 
       frame.should_show();
     }
