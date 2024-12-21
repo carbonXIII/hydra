@@ -1,6 +1,9 @@
 #include <hydra/backend/sdl.h>
 
+#include <wayland-client-protocol.h>
 #include <fmt/format.h>
+
+#include <utility>
 
 #ifndef NO_WAYLAND_EXTENSIONS
 #include <hydra/backend/layer_shell_enum.h>
@@ -17,7 +20,13 @@ namespace hydra::shell {
     }
   }
 
-  SDLContext::SDLContext() {
+  SDLContext::SDLContext(wl_display* display) {
+    if(display) {
+      // We know we have a display, so avoid failing Init() if the env is not set
+      SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "WAYLAND_DISPLAY", "", false);
+      SDL_SetPointerProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
+    }
+
     error_check(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS));
 
     // GL(SL) version

@@ -4,14 +4,12 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_properties.h>
 
-#include <wayland-client-protocol.h>
-
 #include <memory>
-#include <utility>
 
+struct wl_display;
 namespace hydra::shell {
   struct SDLContext {
-    SDLContext();
+    SDLContext(wl_display* display = nullptr);
     ~SDLContext();
   };
 
