@@ -3,8 +3,9 @@
 #include <hydra/types.h>
 
 namespace hydra::util {
+  template <typename Input>
   struct Callback {
-    virtual void operator()(Option::value_t option) {}
+    virtual void operator()(Input option) {}
 
     static auto Create(auto&& cb) {
       using CB = std::decay_t<decltype(cb)>;

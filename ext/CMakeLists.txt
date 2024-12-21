@@ -18,5 +18,11 @@ FetchContent_DeclareEx(
   OVERRIDE_FIND_PACKAGE
 )
 
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  OVERRIDE_FIND_PACKAGE
+)
+
 add_subdirectory(imgui EXCLUDE_FROM_ALL)
 add_subdirectory(wayland EXCLUDE_FROM_ALL)

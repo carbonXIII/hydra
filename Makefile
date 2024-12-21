@@ -2,7 +2,7 @@ include scripts/Makefile
 
 ARGS=--enable-x11=true
 
-all: build
+all: build test
 .PHONY: all
 
 build:
@@ -28,6 +28,12 @@ server/wayland-debug:
 
 test/shell-example:
 	./build/test/shell-example
+.PHONY: test/shell-example
 
 test/shell-example-debug:
 	gdb --args ./build/test/shell-example
+.PHONY: test/shell-example-debug
+
+test:
+	cd build/test && (ctest || ctest --output-on-failure --rerun-failed)
+.PHONY: test

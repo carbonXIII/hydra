@@ -10,12 +10,14 @@
 union SDL_Event;
 namespace hydra::shell {
   struct Shell {
+    using Callback = hydra::util::Callback<Option::value_t>;
+
     Shell(bool external_input = false);
     ~Shell();
 
     void stop();
     bool done();
-    void run(Window& window, hydra::util::Callback& callback);
+    void run(Window& window, Callback& callback);
 
     void show(Table&& table, const clock_t::time_point& show_time = clock_t::now());
     void show(Search&& search);

@@ -93,7 +93,7 @@ namespace hydra::shell {
   void Shell::stop() { self->is_done = true; }
   bool Shell::done() { return self->is_done; }
 
-  void Shell::run(Window& window, hydra::util::Callback& cb) {
+  void Shell::run(Window& window, Callback& cb) {
     self->is_done = false;
 
     FrameContext fc(&window);
