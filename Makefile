@@ -1,6 +1,6 @@
 include scripts/Makefile
 
-ARGS=--enable-x11=true
+ARGS=--enable-x11=true --font="Source Code Pro"
 
 all: build test
 .PHONY: all
@@ -11,7 +11,7 @@ build:
 .PHONY: build
 
 server:
-	MIR_X11_VERBOSE_LOG=true ./build/src/server/hydra $(ARGS) 2>&1 | tee ./build/log
+	MIR_X11_VERBOSE_LOG=true ./build/src/server/hydra $(ARGS) --leader="Left Gui" 2>&1 | tee ./build/log
 .PHONY: server
 
 server/help:
