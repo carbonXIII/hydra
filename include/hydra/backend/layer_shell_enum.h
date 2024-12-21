@@ -6,6 +6,7 @@ namespace hydra::shell {
   static const char* LAYER_SHELL_PROP_LAYER = "layer_shell.layer";
   static const char* LAYER_SHELL_PROP_ANCHORS = "layer_shell.anchors";
   static const char* LAYER_SHELL_PROP_EXCLUSIVE_ZONE = "layer_shell.exclusive_zone";
+  static const char* LAYER_SHELL_PROP_EXCLUSIVE = "layer_shell.exclusive";
 
   enum Layer : uint32_t {
     LAYER_BACKGROUND = 0,

@@ -12,6 +12,9 @@ namespace hydra::shell {
     LayerWindow(const SDLContext&, Window::Properties&& props);
     ~LayerWindow();
 
+    void set_focusable(bool val) override;
+    void set_exclusive(bool val);
+
   private:
     struct Self;
     std::unique_ptr<Self> self;

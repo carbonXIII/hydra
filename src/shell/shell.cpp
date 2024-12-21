@@ -14,6 +14,9 @@
 namespace hydra::shell {
   struct Shell::Self {
     bool is_done = false;
+    bool last_active = false;
+
+    clock_t::time_point activation_time;
 
     StatusLine status;
     std::optional<Prompt> cur_prompt;
@@ -40,6 +43,7 @@ namespace hydra::shell {
       }
 
       cur_prompt.emplace(std::forward<decltype(prompt)>(prompt));
+      activation_time = clock_t::now();
     }
 
     void draw() {
@@ -70,6 +74,23 @@ namespace hydra::shell {
       return std::nullopt;
     }
 
+    struct FrameInfo {
+      bool active;
+      bool repeat;
+      clock_t::duration age;
+    };
+
+    FrameInfo next_frame() {
+      bool active = cur_prompt.has_value();
+      bool last_active = std::exchange(this->last_active, active);
+
+      return FrameInfo {
+        .active = active,
+        .repeat = active == last_active,
+        .age = clock_t::now() - activation_time
+      };
+    }
+
     std::optional<Option::value_t> frame(Window& window, FrameContext& fc) {
       auto frame_guard = fc.start_frame();
 
@@ -79,6 +100,19 @@ namespace hydra::shell {
 
       if(auto res = pop_result()) {
         return res;
+      }
+
+      auto [active, repeat, age] = next_frame();
+      if(!repeat) {
+        window.set_focusable(active);
+        if(active) {
+          window.raise();
+        }
+      }
+
+      if(active && !window.has_focus() && age > Config::Get().FOCUS_TIMEOUT) {
+        reset();
+        return -1;
       }
 
       draw();

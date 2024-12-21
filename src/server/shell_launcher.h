@@ -2,6 +2,7 @@
 
 #include <miral/runner.h>
 #include <miral/wayland_extensions.h>
+#include <miral/external_client.h>
 
 #include <hydra/shell.h>
 #include <hydra/types.h>
@@ -12,7 +13,7 @@
 namespace hydra::util { template <typename Input> struct StateMachine; }
 namespace hydra::server {
   struct ShellLauncher {
-    ShellLauncher(miral::MirRunner* runner);
+    ShellLauncher(miral::MirRunner* runner, miral::ExternalClientLauncher* launcher);
     ShellLauncher(ShellLauncher const&) = delete;
     ShellLauncher(ShellLauncher&&) = delete;
 
@@ -33,10 +34,12 @@ namespace hydra::server {
 
     auto idle();
     auto command();
+    auto launch();
 
     hydra::shell::Shell shell;
 
     miral::MirRunner* runner;
+    miral::ExternalClientLauncher* launcher;
 
     std::weak_ptr<mir::scene::Session> weak_session;
     std::mutex session_lock;

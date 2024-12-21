@@ -8,6 +8,9 @@
 
 namespace hydra {
   struct Config {
+    /// Time to wait before resetting if we can't gain focus
+    std::chrono::milliseconds FOCUS_TIMEOUT { 500 };
+
     /// Time to display error messages
     std::chrono::milliseconds ERROR_TIMEOUT { 1500 };
 

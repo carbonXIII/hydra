@@ -1,3 +1,4 @@
+#include "SDL3/SDL_properties.h"
 #include <hydra/backend/sdl.h>
 
 #include <wayland-client-protocol.h>
@@ -64,6 +65,24 @@ namespace hydra::shell {
     return get();
   }
 
+  void Window::set_focusable(bool val) {
+    SDL_SetWindowFocusable(get(), val);
+  }
+
+  void Window::raise() {
+    SDL_RaiseWindow(get());
+  }
+
+  bool Window::has_focus() {
+    auto flags = SDL_GetWindowFlags(get());
+
+    if((flags & SDL_WINDOW_MINIMIZED)) {
+      return false;
+    }
+
+    return (flags & SDL_WINDOW_INPUT_FOCUS);
+  }
+
   Properties::Properties(): props(SDL_CreateProperties()) {}
 
   Properties::Properties(Properties&& o): props(std::exchange(o.props, {})) {}
@@ -87,11 +106,11 @@ namespace hydra::shell {
 
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, Config::Get().WINDOW_HEIGHT);
 
-
 #ifndef NO_WAYLAND_EXTENSIONS
     SDL_SetNumberProperty(props, LAYER_SHELL_PROP_LAYER, LAYER_OVERLAY);
     SDL_SetNumberProperty(props, LAYER_SHELL_PROP_ANCHORS, ANCHOR_BOTTOM | ANCHOR_LEFT | ANCHOR_RIGHT);
     SDL_SetNumberProperty(props, LAYER_SHELL_PROP_EXCLUSIVE_ZONE, Config::Get().BAR_HEIGHT);
+    SDL_SetBooleanProperty(props, LAYER_SHELL_PROP_EXCLUSIVE, true);
 #else
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, Config::Get().WINDOW_WIDTH);
 #endif

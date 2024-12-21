@@ -61,7 +61,7 @@ namespace hydra::shell {
 
   using CompositorPtr = std::unique_ptr<wl_compositor, detail::CompositorDeleter>;
 
-  static CompositorPtr get_compositor(struct wl_display* display) {
+  static CompositorPtr GetCompositor(struct wl_display* display) {
     return CompositorPtr(RegistryListener(display, &wl_compositor_interface, 3).get_or_die<wl_compositor>());
   }
 }

@@ -1,8 +1,8 @@
 #include <shell_launcher.h>
 
 #include <pthread.h>
-
-#include <tuple>
+#include <giomm/init.h>
+#include <giomm/appinfo.h>
 
 #include <hydra/util/callback.h>
 #include <hydra/backend/layer_window.h>
@@ -55,6 +55,7 @@ namespace hydra::server {
   enum States {
     IDLE,
     COMMAND,
+    LAUNCH
   };
 
   auto ShellLauncher::idle() {
@@ -67,12 +68,14 @@ namespace hydra::server {
     enum Commands: Option::value_t {
       NONE,
       QUIT,
+      LAUNCH,
     };
 
     static constexpr auto opt = [](std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
     hydra::util::Trie<Key, Option> tree {
       std::tuple{Key::Keycode(SDLK_Q), opt("Quit/logout session"),
-        std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}}
+        std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}},
+      std::tuple{Key::Keycode(SDLK_SPACE), opt("Launch application", LAUNCH)}
     };
 
     static constexpr auto show_node = [](auto* shell, auto const& node) {
@@ -85,7 +88,7 @@ namespace hydra::server {
     };
     show_node(&shell, tree.root());
 
-    std::string status = fmt::format("{} ", to_string(hydra::Config::Get().LEADER));
+    std::string status = fmt::format("{} ", to_string(Config::Get().LEADER));
     shell.show_status(status);
 
     using node = std::optional<decltype(tree)::node_t>;
@@ -105,6 +108,8 @@ namespace hydra::server {
             case QUIT:
               this->runner->stop();
               return States::IDLE;
+            case LAUNCH:
+              return States::LAUNCH;
             case NONE:
               show_node(&shell, *cur);
               return -1;
@@ -118,14 +123,45 @@ namespace hydra::server {
     };
   }
 
-  ShellLauncher::ShellLauncher(MirRunner* runner)
+  auto ShellLauncher::launch() {
+    std::vector<Glib::RefPtr<Gio::AppInfo>> apps = Gio::AppInfo::get_all();
+    std::ranges::stable_sort(apps, [](auto&& a, auto&& b) {
+      return a->get_display_name() < b->get_display_name();
+    });
+
+    hydra::Search prompt;
+    prompt.reserve(apps.size());
+
+    Option::value_t idx = 0;
+    for(auto app: apps) {
+      prompt.emplace_back(idx++, app->get_display_name());
+    }
+
+    this->shell.show(std::move(prompt));
+
+    return [this,apps=std::move(apps)](auto res) -> std::size_t {
+      if(res >= 0 && res < apps.size()) {
+        auto selected = apps[res];
+
+        auto cmds = ExternalClientLauncher::split_command(selected->get_commandline());
+        this->launcher->launch(cmds);
+      }
+
+      return States::IDLE;
+    };
+  }
+
+  ShellLauncher::ShellLauncher(MirRunner* runner, ExternalClientLauncher* launcher)
     : runner(runner),
+      launcher(launcher),
       state_machine(StateMachine::Create<
                     ShellLauncher,
                     hydra::util::State { States::IDLE, &ShellLauncher::idle },
-                    hydra::util::State { States::COMMAND, &ShellLauncher::command }
+                    hydra::util::State { States::COMMAND, &ShellLauncher::command },
+                    hydra::util::State { States::LAUNCH, &ShellLauncher::launch }
                     >(this))
   {
+    Gio::init();
     runner->add_stop_callback([this](){ this->stop(); });
   }
 

@@ -22,8 +22,11 @@ namespace hydra::shell {
     SDL_GLContext gl_context();
 
     operator SDL_Window*();
-
     Window(const Window&) = delete;
+
+    virtual bool has_focus();
+    virtual void set_focusable(bool val);
+    virtual void raise();
 
   private:
     struct SDL_Window_Deleter {

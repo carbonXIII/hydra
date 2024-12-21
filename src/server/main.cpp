@@ -2,6 +2,7 @@
 #include <miral/runner.h>
 #include <miral/x11_support.h>
 #include <miral/internal_client.h>
+#include <miral/external_client.h>
 #include <miral/set_window_management_policy.h>
 #include <miral/append_event_filter.h>
 #include <miral/minimal_window_manager.h>
@@ -18,8 +19,9 @@ using namespace hydra::server;
 
 int main(int argc, char const* argv[]) {
   MirRunner runner{argc, argv};
+  ExternalClientLauncher launcher;
 
-  ShellLauncher shell(&runner);
+  ShellLauncher shell(&runner, &launcher);
 
   WaylandExtensions extensions;
   shell.enable_extensions(extensions);
@@ -52,6 +54,7 @@ int main(int argc, char const* argv[]) {
       extensions,
       StartupInternalClient{shell.internal_client()},
       set_window_management_policy<MinimalWindowManager>(),
-      AppendEventFilter{handle_keyboard_events}
+      AppendEventFilter{handle_keyboard_events},
+      launcher
     });
 }
