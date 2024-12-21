@@ -8,11 +8,17 @@
 
 namespace hydra {
   struct Config {
+    /// Target frame time (1 / refresh)
+    std::chrono::milliseconds FRAME_TIMEOUT { 1000 / 60 };
+
     /// Time to wait before resetting if we can't gain focus
     std::chrono::milliseconds FOCUS_TIMEOUT { 500 };
 
     /// Time to display error messages
     std::chrono::milliseconds ERROR_TIMEOUT { 1500 };
+
+    /// Number of frames to buffer inputs without a prompt consuming them
+    uint64_t BUFFER_FRAMES = 5;
 
     unsigned BAR_HEIGHT = 50;
     unsigned TRIE_ROW_COUNT = 5;
@@ -21,6 +27,11 @@ namespace hydra {
     unsigned WINDOW_WIDTH = 640; // Ignored unless NO_WAYLAND_EXTENSIONS defined
 
     hydra::Key LEADER = hydra::Key::Scancode(SDL_SCANCODE_ESCAPE);
+
+    template <typename Dur>
+    constexpr auto buffer_timeout() const {
+      return BUFFER_FRAMES * std::chrono::duration_cast<Dur>(FRAME_TIMEOUT).count();
+    }
 
     static Config const& Get();
   };

@@ -15,16 +15,21 @@ namespace hydra::shell {
   struct Shell::Self {
     bool is_done = false;
     bool last_active = false;
+    bool external_input = false;
 
     clock_t::time_point activation_time;
 
     StatusLine status;
     std::optional<Prompt> cur_prompt;
 
+    // This should definitely be a lock free queue
+    std::mutex buffer_lock;
+    std::queue<std::pair<Key, uint64_t>> buffer;
+
     void handle_event(const SDL_Event& e) {
       if(e.type == SDL_EVENT_QUIT) {
         is_done = true;
-      } else if(e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
+      } else if(!external_input && e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
         auto key = Key::Scancode(e.key.scancode);
         auto timestamp = e.key.timestamp;
         handle_key(key, timestamp);
@@ -32,8 +37,22 @@ namespace hydra::shell {
     }
 
     void handle_key(Key key, uint64_t timestamp_ns) {
-      if(cur_prompt.has_value() && !try_result(*cur_prompt)) {
-        ::hydra::shell::handle_key(*cur_prompt, key);
+      std::lock_guard g{buffer_lock};
+
+      const auto timeout = Config::Get().buffer_timeout<std::chrono::nanoseconds>();
+      while(buffer.size() && timestamp_ns - buffer.front().second > timeout) {
+        buffer.pop();
+      }
+
+      buffer.push({key, timestamp_ns});
+    }
+
+    void consume_keys() {
+      std::lock_guard g{buffer_lock};
+
+      while(buffer.size() && cur_prompt.has_value() && !try_result(*cur_prompt)) {
+        ::hydra::shell::handle_key(*cur_prompt, buffer.front().first);
+        buffer.pop();
       }
     }
 
@@ -98,6 +117,8 @@ namespace hydra::shell {
         handle_event(e);
       });
 
+      consume_keys();
+
       if(auto res = pop_result()) {
         return res;
       }
@@ -125,7 +146,10 @@ namespace hydra::shell {
     }
   };
 
-  Shell::Shell(bool external_input): self(std::make_unique<Shell::Self>()) {}
+  Shell::Shell(bool external_input): self(std::make_unique<Shell::Self>()) {
+    self->external_input = external_input;
+  }
+
   Shell::~Shell() {}
 
   void Shell::stop() { self->is_done = true; }
@@ -160,5 +184,9 @@ namespace hydra::shell {
 
   bool Shell::wants_input() {
     return self->cur_prompt.has_value();
+  }
+
+  void Shell::handle_key(Key key, uint64_t timestamp_ns) {
+    return self->handle_key(key, timestamp_ns);
   }
 }

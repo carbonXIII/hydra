@@ -5,6 +5,7 @@ find_package(fmt)
 
 add_executable(hydra
   shell_launcher.cpp
+  window_manager.cpp
   main.cpp)
 
 target_link_libraries(hydra PRIVATE

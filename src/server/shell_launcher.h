@@ -3,6 +3,7 @@
 #include <miral/runner.h>
 #include <miral/wayland_extensions.h>
 #include <miral/external_client.h>
+#include <miral/toolkit_event.h>
 
 #include <hydra/shell.h>
 #include <hydra/types.h>
@@ -27,6 +28,7 @@ namespace hydra::server {
 
     void stop();
     bool show_commands();
+    bool handle_keyboard_event(MirKeyboardEvent const* event);
 
   private:
     void operator()(struct wl_display* display);

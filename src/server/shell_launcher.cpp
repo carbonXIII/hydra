@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <giomm/init.h>
 #include <giomm/appinfo.h>
+#include <mir_toolkit/events/enums.h>
 
 #include <hydra/util/callback.h>
 #include <hydra/backend/layer_window.h>
@@ -153,7 +154,8 @@ namespace hydra::server {
   }
 
   ShellLauncher::ShellLauncher(MirRunner* runner, ExternalClientLauncher* launcher)
-    : runner(runner),
+    : shell(true /* external input */),
+      runner(runner),
       launcher(launcher),
       state_machine(StateMachine::Create<
                     ShellLauncher,
@@ -178,5 +180,22 @@ namespace hydra::server {
     });
 
     return ret;
+  }
+
+  bool ShellLauncher::handle_keyboard_event(MirKeyboardEvent const* event) {
+    using namespace miral::toolkit;
+
+    auto sc = mir_keyboard_event_scan_code(event);
+    auto action = mir_keyboard_event_action(event);
+
+    if(shell.wants_input() && action == mir_keyboard_action_down) {
+      auto key = hydra::Key::Raw(sc);
+      auto timestamp_ns = mir_input_event_get_event_time(mir_keyboard_event_input_event(event));
+      shell.handle_key(key, timestamp_ns);
+    } else if(sc == Config::Get().LEADER.get() && action == mir_keyboard_action_down) {
+      show_commands();
+    }
+
+    return false;
   }
 }
