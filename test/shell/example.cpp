@@ -115,8 +115,7 @@ int main() {
   Window window(context, Window::Properties::FromConfig());
 
   State state{&shell};
-  auto sm = hydra::util::CreateStateMachine<
-    hydra::Option::value_t,
+  auto sm = hydra::util::StateMachine<hydra::Option::value_t>::Create<
     State,
     hydra::util::State{ State::IDLE, &State::idle },
     hydra::util::State{ State::TABLE, &State::table },

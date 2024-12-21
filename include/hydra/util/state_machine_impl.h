@@ -1,5 +1,7 @@
 #include <hydra/util/state_machine.h>
 
+#include <variant>
+
 #include <hydra/util/util.h>
 
 namespace hydra::util {
@@ -60,8 +62,9 @@ namespace hydra::util {
     }
   };
 
-  template <typename Input, typename T, auto... states>
-  StateMachinePtr<Input> CreateStateMachine(auto&&... args) {
+  template <typename Input>
+  template <typename T, auto... states>
+  auto StateMachine<Input>::Create(auto&&... args) -> std::shared_ptr<StateMachine> {
     return std::make_shared<StateMachineImpl<Input, T, states...>>(std::forward<decltype(args)>(args)...);
   }
 }

@@ -19,8 +19,7 @@ TEST(StateMachineTest, IdentityMachine) {
     int called = 0;
   } state;
 
-  auto sm = hydra::util::CreateStateMachine<
-    std::size_t,
+  auto sm = hydra::util::StateMachine<std::size_t>::Create<
     BasicState,
     hydra::util::State{BasicState::IDENTITY, &BasicState::identity}
   >(&state);
@@ -53,8 +52,7 @@ struct Mod3 {
 
 TEST(StateMachineTest, Mod3) {
   Mod3 state;
-  auto sm = hydra::util::CreateStateMachine<
-    std::size_t,
+  auto sm = hydra::util::StateMachine<std::size_t>::Create<
     Mod3,
     hydra::util::State{0, &Mod3::go<0>},
     hydra::util::State{1, &Mod3::go<1>},
