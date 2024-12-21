@@ -32,7 +32,9 @@ namespace hydra::server {
 
     void stop();
     bool show_commands();
+
     bool handle_keyboard_event(MirKeyboardEvent const* event);
+    void set_title(std::string_view s);
 
   private:
     void operator()(struct wl_display* display);
@@ -55,5 +57,7 @@ namespace hydra::server {
 
     using StateMachine = util::StateMachine<Option::value_t>;
     std::shared_ptr<StateMachine> state_machine;
+
+    std::string title;
   };
 }

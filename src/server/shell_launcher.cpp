@@ -75,6 +75,7 @@ namespace hydra::server {
   };
 
   auto ShellLauncher::idle() {
+    shell.show_status(title);
     return [](auto) -> std::size_t {
       throw std::runtime_error("Unreachable");
     };
@@ -242,5 +243,16 @@ namespace hydra::server {
     }
 
     return false;
+  }
+
+  void ShellLauncher::set_title(std::string_view s) {
+    this->title = s;
+    state_machine->lock([](std::size_t state) -> std::size_t {
+      if(state == States::IDLE) {
+        return States::IDLE;
+      }
+
+      return -1;
+    });
   }
 }

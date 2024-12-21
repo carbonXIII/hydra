@@ -3,6 +3,10 @@
 #include <miral/toolkit_event.h>
 #include <miral/application_info.h>
 
+#include <utility>
+
+#include <workspace_info_impl.h>
+
 using namespace miral;
 
 namespace hydra::server {
@@ -28,13 +32,22 @@ namespace hydra::server {
     return false;
   }
 
+  void WindowManager::handle_modify_window(WindowInfo& win, WindowSpecification const& req) {
+    Base::handle_modify_window(win, req);
+
+    if(auto metadata = Metadata::try_from(tools, win);
+       metadata && metadata == default_workspace.focused_last()) {
+      shell_launcher->set_title(metadata->get_display_name());
+    }
+  }
+
   WindowSpecification WindowManager::place_new_window(ApplicationInfo const& app, WindowSpecification const& req) {
     auto res = Base::place_new_window(app, req);
 
     bool is_shell = shell_launcher->matches(app);
     auto& workspace = is_shell ? shell_workspace : default_workspace;
     auto metadata = std::make_shared<Metadata>(app, res);
-    metadata->workspace = { workspace };
+    workspace.place_new_window(metadata);
 
     res.userdata() = metadata;
     if(is_shell) {
@@ -50,6 +63,39 @@ namespace hydra::server {
     if(auto metadata = Metadata::try_from(tools, win)) {
       tools.add_tree_to_workspace(win.window(), metadata->workspace);
     }
+  }
+
+  void WindowManager::advise_focus_gained(WindowInfo const& _win) {
+    auto& win = tools.info_for(_win.window());
+    if(auto metadata = Metadata::try_from(tools, win)) {
+      auto& workspace = info_for(metadata->workspace);
+      if(auto pending = workspace.focus_pop();
+         pending && try_focus(pending, false /* preserve workspace */)) {
+      } else {
+        Base::advise_focus_gained(win);
+        workspace.advise_focus_gained(metadata);
+
+        if(workspace == shell_workspace) {
+          shell_launcher->set_title("");
+        } else {
+          shell_launcher->set_title(metadata->get_display_name());
+        }
+      }
+    }
+  }
+
+  void WindowManager::advise_delete_window(WindowInfo const& win) {
+    if(auto metadata = Metadata::try_from(tools, win)) {
+      auto& workspace = info_for(metadata->workspace);
+      workspace.remove(metadata);
+      if(auto next_focus = workspace.focused_last()) {
+        try_focus(next_focus, true /* preserve workspace */);
+      } else if(workspace == active_workspace()) {
+        shell_launcher->set_title("");
+      }
+    }
+
+    Base::advise_delete_window(win);
   }
 
   void WindowManager::locked_list_windows(std::function<void(std::weak_ptr<Metadata>)> const& functor) {
@@ -71,10 +117,35 @@ namespace hydra::server {
     });
   }
 
-  bool WindowManager::try_focus(MetadataPtr metadata) {
+  std::shared_ptr<Workspace> WindowManager::active_workspace() {
+    const auto win = tools.active_window();
+    if(auto metadata = Metadata::try_from(tools, tools.info_for(win))) {
+      return metadata->workspace;
+    }
+
+    return nullptr;
+  }
+
+  auto WindowManager::info_for(std::shared_ptr<miral::Workspace> const& handle) -> WorkspaceInfo& {
+    if(handle == shell_workspace) return shell_workspace;
+    if(handle == default_workspace) return default_workspace;
+    std::unreachable();
+  }
+
+  bool WindowManager::try_focus(MetadataPtr metadata, bool preserve_workspace) {
     if(auto win = metadata->try_window(tools)) {
-      tools.select_active_window(win->window());
-      return true;
+      bool can_select = tools.can_select_window(win->window());
+      if(preserve_workspace && active_workspace() != metadata->workspace) {
+        can_select = false;
+      }
+
+      if(!can_select) {
+        info_for(metadata->workspace).focus_push(metadata);
+        return false;
+      } else {
+        tools.select_active_window(win->window());
+        return true;
+      }
     }
 
     return false;

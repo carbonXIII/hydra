@@ -20,3 +20,4 @@ endfunction()
 
 add_test(state_machine util/state_machine.cpp)
 add_test(trie util/trie.cpp)
+add_test(workspace_info server/workspace_info.cpp)
