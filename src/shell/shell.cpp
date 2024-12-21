@@ -6,6 +6,7 @@
 #include <chrono>
 #include <optional>
 #include <queue>
+#include <condition_variable>
 
 #include <hydra/config.h>
 #include <widget.h>
@@ -18,13 +19,23 @@ namespace hydra::shell {
     bool external_input = false;
 
     clock_t::time_point activation_time;
+    clock_t::time_point last_draw_time;
 
     StatusLine status;
     std::optional<Prompt> cur_prompt;
 
-    // This should definitely be a lock free queue
     std::mutex buffer_lock;
+    std::condition_variable buffer_cv;
     std::queue<std::pair<Key, uint64_t>> buffer;
+
+
+    void stop() {
+      is_done = true;
+      {
+        std::lock_guard g{buffer_lock};
+        buffer_cv.notify_all();
+      }
+    }
 
     void handle_event(const SDL_Event& e) {
       if(e.type == SDL_EVENT_QUIT) {
@@ -45,10 +56,17 @@ namespace hydra::shell {
       }
 
       buffer.push({key, timestamp_ns});
+      buffer_cv.notify_all();
     }
 
-    void consume_keys() {
-      std::lock_guard g{buffer_lock};
+    void consume_keys(clock_t::time_point deadline) {
+      std::unique_lock g{buffer_lock};
+
+      if(external_input && buffer.empty() && !cur_prompt.has_value()) {
+        buffer_cv.wait_until(g, deadline, [this]() -> bool {
+          return buffer.size() || cur_prompt.has_value() || is_done;
+        });
+      }
 
       while(buffer.size() && cur_prompt.has_value() && !try_result(*cur_prompt)) {
         ::hydra::shell::handle_key(*cur_prompt, buffer.front().first);
@@ -117,7 +135,7 @@ namespace hydra::shell {
         handle_event(e);
       });
 
-      consume_keys();
+      consume_keys(last_draw_time + Config::Get().FRAME_TIMEOUT);
 
       if(auto res = pop_result()) {
         return res;
@@ -139,6 +157,7 @@ namespace hydra::shell {
       if(cur_prompt.has_value() || !window.should_hide()) {
         draw();
         frame_guard.should_show();
+        last_draw_time = clock_t::now();
         return pop_result();
       }
 
@@ -152,7 +171,7 @@ namespace hydra::shell {
 
   Shell::~Shell() {}
 
-  void Shell::stop() { self->is_done = true; }
+  void Shell::stop() { self->stop(); }
   bool Shell::done() { return self->is_done; }
 
   void Shell::run(Window& window, Callback& cb) {
