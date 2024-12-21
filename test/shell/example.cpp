@@ -56,9 +56,6 @@ struct State {
 
     return [this](auto res) -> std::size_t {
       switch(Event(res)) {
-        case Event::ERROR:
-          shell->show_error("Undefined");
-          break;
         case Event::QUIT:
           shell->stop();
           break;
@@ -72,6 +69,7 @@ struct State {
         case Event::SEARCH:
           return States::SEARCH;
         default:
+          shell->show_error("Undefined");
           break;
       }
 

@@ -35,7 +35,7 @@ namespace hydra::shell {
          it != options.end() && it->first == key) {
         ret = it->second.value;
       } else {
-        ret = key.get();
+        ret = -Option::value_t{key.get() + 1};
       }
     }
 

@@ -5,6 +5,8 @@
 #include <hydra/util/callback.h>
 #include <hydra/backend/layer_window.h>
 
+#include <hydra/util/state_machine_impl.h>
+
 using namespace miral;
 
 namespace hydra::server {
@@ -38,8 +40,7 @@ namespace hydra::server {
     SDLContext ctx(display);
     LayerWindow window(ctx, Window::Properties::FromConfig());
 
-    auto cb = Shell::Callback::Create([](auto){ /* do nothing */ });
-    shell.run(window, cb);
+    shell.run(window, *state_machine);
   }
 
   void ShellLauncher::operator()(std::weak_ptr<mir::scene::Session> const session) {
@@ -48,8 +49,66 @@ namespace hydra::server {
     startup_cv.notify_all();
   }
 
+  enum State {
+    IDLE,
+    COMMAND,
+  };
+
+  auto ShellLauncher::idle() {
+    return [](auto) -> std::size_t {
+      throw std::runtime_error("Unreachable");
+    };
+  }
+
+  auto ShellLauncher::command() {
+    enum Commands: Option::value_t {
+      QUIT,
+    };
+
+    shell.show(hydra::Table{
+        std::pair{hydra::Key::Keycode(SDLK_Q), hydra::Option{std::size_t(Commands::QUIT), "Quit"}},
+      });
+
+    return [this](auto res) -> std::size_t {
+      if(res < 0) {
+        auto key = hydra::Key::Raw(-res - 1);
+        shell.show_error(fmt::format("{} Undefined", to_string(key)));
+      } else {
+        switch(Commands(res)) {
+          case Commands::QUIT:
+            runner->stop();
+            break;
+          default:
+            break;
+        }
+      }
+
+      return State::IDLE;
+    };
+  }
+
   ShellLauncher::ShellLauncher(MirRunner* runner)
-    : runner(runner) {
+    : runner(runner),
+      state_machine(StateMachine::Create<
+                    ShellLauncher,
+                    hydra::util::State { State::IDLE, &ShellLauncher::idle },
+                    hydra::util::State { State::COMMAND, &ShellLauncher::command }
+                    >(this))
+  {
     runner->add_stop_callback([this](){ this->stop(); });
+  }
+
+  bool ShellLauncher::show_commands() {
+    bool ret = false;
+    state_machine->lock([&ret](std::size_t state) -> std::size_t {
+      if(state == State::IDLE) {
+        ret = true;
+        return State::COMMAND;
+      }
+
+      return -1;
+    });
+
+    return ret;
   }
 }
