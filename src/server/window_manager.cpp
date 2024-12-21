@@ -117,6 +117,24 @@ namespace hydra::server {
     });
   }
 
+  void WindowManager::locked_advance_window(const int steps) {
+    tools.invoke_under_lock([this,steps]() {
+      if(auto next = next_focused(steps)) {
+        try_focus(next);
+      }
+    });
+  }
+
+  void WindowManager::locked_close_active() {
+    tools.invoke_under_lock([this]{
+      if(auto last_active = default_workspace.focused_last()) {
+        if(auto win = last_active->try_window(tools)) {
+          tools.ask_client_to_close(win->window());
+        }
+      }
+    });
+  }
+
   std::shared_ptr<Workspace> WindowManager::active_workspace() {
     const auto win = tools.active_window();
     if(auto metadata = Metadata::try_from(tools, tools.info_for(win))) {
@@ -130,6 +148,27 @@ namespace hydra::server {
     if(handle == shell_workspace) return shell_workspace;
     if(handle == default_workspace) return default_workspace;
     std::unreachable();
+  }
+
+  MetadataPtr WindowManager::next_focused(const int steps) {
+    std::vector<MetadataPtr> windows;
+    tools.for_each_window_in_workspace(default_workspace, [&](miral::Window const& win) {
+      auto& win_info = tools.info_for(win);
+      if(!win_info.can_be_active()) return;
+      if(auto metadata = Metadata::try_from(tools, win_info)) {
+        windows.push_back(metadata);
+      }
+    });
+
+    if(windows.empty()) return nullptr;
+
+    int cur = default_workspace.focused_last(windows.begin(), windows.end()) - windows.begin();
+
+    int n = windows.size();
+    cur = std::clamp(cur, 0, n - 1);
+    int next = (cur + (steps % n) + n) % n;
+
+    return windows[next];
   }
 
   bool WindowManager::try_focus(MetadataPtr metadata, bool preserve_workspace) {

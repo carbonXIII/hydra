@@ -30,10 +30,13 @@ namespace hydra::server {
 
     std::shared_ptr<miral::Workspace> active_workspace();
     auto info_for(std::shared_ptr<miral::Workspace> const& handle) -> WorkspaceInfo&;
+    MetadataPtr next_focused(const int steps);
     bool try_focus(MetadataPtr metadata, bool preserve_workspace = true);
 
     void locked_list_windows(std::function<void(std::weak_ptr<Metadata>)> const& functor);
     void locked_select_window(MetadataPtr metadata);
+    void locked_advance_window(const int steps);
+    void locked_close_active();
 
   private:
     ShellLauncher* shell_launcher;

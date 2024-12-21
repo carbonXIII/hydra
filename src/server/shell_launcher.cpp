@@ -87,6 +87,9 @@ namespace hydra::server {
       QUIT,
       LAUNCH,
       WINDOW_FIND,
+      WINDOW_NEXT,
+      WINDOW_PREV,
+      WINDOW_CLOSE,
     };
 
     static constexpr auto opt = [](std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
@@ -95,7 +98,10 @@ namespace hydra::server {
         std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}},
       std::tuple{Key::Keycode(SDLK_SPACE), opt("Launch application", LAUNCH)},
       std::tuple{Key::Keycode(SDLK_W), opt("Windows"),
-        std::tuple{Key::Keycode(SDLK_W), opt("Find window", WINDOW_FIND)}}
+        std::tuple{Key::Keycode(SDLK_W), opt("Find window", WINDOW_FIND)},
+        std::tuple{Key::Keycode(SDLK_N), opt("Next window", WINDOW_NEXT)},
+        std::tuple{Key::Keycode(SDLK_P), opt("Prev window", WINDOW_PREV)},
+        std::tuple{Key::Keycode(SDLK_D), opt("Close window", WINDOW_CLOSE)}}
     };
 
     static constexpr auto show_node = [](auto* shell, auto const& node) {
@@ -132,6 +138,15 @@ namespace hydra::server {
               return States::LAUNCH;
             case WINDOW_FIND:
               return States::WINDOW_FIND;
+            case WINDOW_NEXT:
+              if(wm) wm->locked_advance_window(1);
+              return States::IDLE;
+            case WINDOW_PREV:
+              if(wm) wm->locked_advance_window(-1);
+              return States::IDLE;
+            case WINDOW_CLOSE:
+              if(wm) wm->locked_close_active();
+              return States::IDLE;
             case NONE:
               show_node(&shell, *cur);
               return -1;
