@@ -27,6 +27,7 @@ namespace hydra::shell {
     virtual bool has_focus();
     virtual void set_focusable(bool val);
     virtual void raise();
+    virtual bool should_hide() { return false; }
 
   private:
     struct SDL_Window_Deleter {

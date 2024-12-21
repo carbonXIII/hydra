@@ -16,6 +16,7 @@ namespace hydra::server {
   void ShellLauncher::enable_extensions(miral::WaylandExtensions& extensions) {
     for(auto ext: std::array {
         miral::WaylandExtensions::zwlr_layer_shell_v1,
+        miral::WaylandExtensions::zwlr_foreign_toplevel_manager_v1,
       }) {
       extensions.conditionally_enable(ext, [this](miral::WaylandExtensions::EnableInfo const& info) {
         if(auto session = weak_session.lock()) {

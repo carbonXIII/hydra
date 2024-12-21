@@ -14,6 +14,7 @@ namespace hydra::shell {
 
     void set_focusable(bool val) override;
     void set_exclusive(bool val);
+    bool should_hide() override;
 
   private:
     struct Self;

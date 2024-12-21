@@ -115,9 +115,13 @@ namespace hydra::shell {
         return -1;
       }
 
-      draw();
-      frame_guard.should_show();
-      return pop_result();
+      if(cur_prompt.has_value() || !window.should_hide()) {
+        draw();
+        frame_guard.should_show();
+        return pop_result();
+      }
+
+      return std::nullopt;
     }
   };
 

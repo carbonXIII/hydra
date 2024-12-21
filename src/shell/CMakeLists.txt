@@ -7,6 +7,7 @@ add_library(hydra-shell STATIC
   search.cpp
   backend/sdl.cpp
   backend/layer_shell_wrapper.cpp
+  backend/foreign_toplevel_wrapper.cpp
   backend/layer_window.cpp
   backend/imgui.cpp
   backend/imgui_config.cpp)

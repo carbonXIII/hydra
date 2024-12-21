@@ -10,21 +10,27 @@
 #include <hydra/backend/layer_shell_enum.h>
 #include <backend/wayland.h>
 #include <backend/layer_shell_wrapper.h>
+#include <backend/foreign_toplevel_wrapper.h>
 
 namespace hydra::shell {
   struct LayerWindow::Self {
     Self(wl_display* display)
       : layer_shell(display),
-        compositor(GetCompositor(display))
+        compositor(GetCompositor(display)),
+        foreign_toplevels(display),
+        fullscreen_count(0)
     {}
 
     LayerShell layer_shell;
     CompositorPtr compositor;
+    ForeignTopLevels foreign_toplevels;
 
     std::weak_ptr<LayerSurface> layer_surface;
 
     bool exclusive;
     bool interactive;
+
+    int fullscreen_count;
   };
 
   auto&& use_custom_role(Window::Properties&& props) {
@@ -57,6 +63,12 @@ namespace hydra::shell {
 
       self = std::make_unique<Self>(display);
     }
+
+    self->foreign_toplevels.add_matcher([](ForeignTopLevels::Toplevel& toplevel) {
+      return toplevel.is_fullscreen() && toplevel.is_active();
+    }, [this](bool add, ForeignTopLevels::Toplevel& toplevel) {
+      self->fullscreen_count += add ? 1 : -1;
+    });
 
     auto layer = shell::Layer(SDL_GetNumberProperty(props, LAYER_SHELL_PROP_LAYER, ZWLR_LAYER_SHELL_V1_LAYER_TOP));
     self->layer_surface = self->layer_shell.get_layer_surface(surface, layer, "");
@@ -122,6 +134,10 @@ namespace hydra::shell {
     }
 
     SDL_SetWindowFocusable(get(), focus);
+  }
+
+  bool LayerWindow::should_hide() {
+    return self->fullscreen_count > 0;
   }
 
   LayerWindow::~LayerWindow() {}

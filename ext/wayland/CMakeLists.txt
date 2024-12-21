@@ -33,6 +33,8 @@ endfunction()
 add_library(wayland-ext INTERFACE)
 add_wayland_client_protocol(wayland-ext PROTOCOLS
   xdg-shell.xml # Required by layer-shell
-  wlr-layer-shell-unstable-v1.xml)
+  wlr-layer-shell-unstable-v1.xml
+  wlr-foreign-toplevel-management-unstable-v1.xml
+)
 target_include_directories(wayland-ext INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(wayland-ext INTERFACE wayland-client)
