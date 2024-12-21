@@ -25,7 +25,14 @@ set(CPACK_PACKAGE_CONTACT jordan@carbondoes.dev)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "libmiral7"
   "mir-graphics-drivers-desktop"
-  "libfmt-dev"
+  "libfmt9"
+  "libwayland-client0"
+  "libasound2"
+  "libxext6"
+  "libpugixml1v5"
+  "libglibmm-2.4-1t64"
+  "libfontconfig1"
+  "libopengl0"
 )
 list(JOIN CPACK_DEBIAN_PACKAGE_DEPENDS "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 

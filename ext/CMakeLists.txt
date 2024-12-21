@@ -4,6 +4,8 @@ function(FetchContent_DeclareEx contentName)
   FetchContent_Declare(${ARGV} SOURCE_DIR ${FETCH_TARGET_DIR}/${contentName})
 endfunction()
 
+set(SDL_STATIC ON CACHE BOOL "Build SDL static target" FORCE)
+set(SDL_SHARED OFF CACHE BOOL "Don't build SDL shared target" FORCE)
 FetchContent_DeclareEx(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git

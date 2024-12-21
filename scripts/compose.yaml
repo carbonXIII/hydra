@@ -7,10 +7,15 @@ services:
     volumes:
       - ../:/src
       - ../build/deb/:/build
+      - ../build/deps:/deps
     command: |
       bash -c '
-      env
-      cmake -B /build -S /src/
+      update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 99
+      update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-14 99
+      update-alternatives --get-selections
+      g++ --version
+
+      cmake -B /build -S /src/ -DFETCH_TARGET_DIR=/deps
 
       cd /build
       cmake --build .

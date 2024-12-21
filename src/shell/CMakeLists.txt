@@ -1,7 +1,5 @@
 find_package(fmt)
-find_package(SDL3)
 find_package(rapidfuzz)
-find_package(Fontconfig)
 
 add_library(hydra-shell STATIC
   shell.cpp

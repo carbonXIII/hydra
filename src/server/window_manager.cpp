@@ -103,7 +103,6 @@ namespace hydra::server {
       tools.for_each_window_in_workspace(default_workspace, [this,&functor](miral::Window const& win) {
         auto& win_info = tools.info_for(win);
         if(auto metadata = Metadata::try_from(tools, win_info)) {
-          fmt::println("win {}", metadata->get_display_name());
           if(!win_info.can_be_active()) return;
           std::forward<decltype(functor)>(functor)(std::weak_ptr{metadata});
         }

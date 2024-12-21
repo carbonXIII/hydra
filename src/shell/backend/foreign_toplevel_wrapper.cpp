@@ -1,5 +1,7 @@
 #include <backend/foreign_toplevel_wrapper.h>
 
+#include <span>
+
 namespace hydra::shell {
   ForeignTopLevels::ForeignTopLevels(wl_display* display)
     : self(RegistryListener{display, &zwlr_foreign_toplevel_manager_v1_interface, 2}.get_or_die<wl_resource>()) {

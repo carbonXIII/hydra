@@ -5,13 +5,19 @@ Experimental Mir-based compositor
 
 ## Dependencies
 ### Ubuntu
-- libmiral-dev (build) or libmiral5t64 (runtime)
+- g++ (os >= 24.10), g++-14
+- libmiral-dev
 - mir-graphics-drivers-desktop
-- xwayland (optional: X11 support)
-
-### Arch
-- (AUR) mir-git
 - xwayland
+- libfmt-dev
+- libwayland-dev
+- libwayland-dev
+- libasound2-dev
+- libgl1-mesa-dev
+- libxext-dev
+- libpugixml-dev
+- libglibmm-2.4-dev
+- libfontconfig1-dev
 
 ## Building
 ### Local
@@ -19,7 +25,7 @@ Experimental Mir-based compositor
 make all
 ```
 
-### Debian
+### .deb builder for Ubuntu (24.04)
 ```
 make builder
 make deb
@@ -30,11 +36,23 @@ For more details about the build targets, see `Makefile` and `CMakeLists.txt`
 ## Run
 ### Installed
 ```
-hydra
+hydra --enable-x11
+```
+To use a different leader key (by default Escape), use the `--leader` option:
+```
+hydra --leader "Left Gui" --enable-x11
 ```
 
+See `hydra --help` for more details.
+
 ### Development
+- Run the server locally:
 ```
 make server
+```
+
+- Run the server using the wayland backend:
+```
+make server/wayland
 ```
 

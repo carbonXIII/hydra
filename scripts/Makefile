@@ -10,4 +10,4 @@ deb:
 
 install:
 	rsync ./build/deb/${DEB_FILE} ${TEST_HOST}:${DIST_DIR}
-	ssh ${TEST_HOST} sudo apt install ${DIST_DIR}/${DEB_FILE}
+	ssh ${TEST_HOST} sudo apt install --reinstall ${DIST_DIR}/${DEB_FILE}
