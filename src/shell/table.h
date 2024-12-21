@@ -42,7 +42,7 @@ namespace hydra::shell {
     void draw() {
       if(ImGui::Begin(util::label("window").c_str(), nullptr,
                       ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize)) {
-        const unsigned ncols = (options.size() + Config::Get().TRIE_ROW_COUNT - 1) / Config::Get().TRIE_ROW_COUNT;
+        const unsigned ncols = (options.size() + Config::Get().TABLE_ROW_COUNT - 1) / Config::Get().TABLE_ROW_COUNT;
         if(ImGui::BeginTable(util::label("table").c_str(), ncols * 3)) {
           for(unsigned i = 0; i < ncols; ++i) {
             ImGui::TableSetupColumn(util::label(fmt::format("key#{}", i)).c_str(), ImGuiTableColumnFlags_WidthFixed);
@@ -50,10 +50,10 @@ namespace hydra::shell {
             ImGui::TableSetupColumn(util::label(fmt::format("cmd#{}", i)).c_str(), ImGuiTableColumnFlags_WidthFixed);
           }
 
-          for(int i = 0; i < Config::Get().TRIE_ROW_COUNT; i++) {
+          for(int i = 0; i < Config::Get().TABLE_ROW_COUNT; i++) {
             ImGui::TableNextRow();
             for(int j = 0; j < ncols; ++j) {
-              if(int idx = j * Config::Get().TRIE_ROW_COUNT + i; idx < options.size()) {
+              if(int idx = j * Config::Get().TABLE_ROW_COUNT + i; idx < options.size()) {
                 if(ImGui::TableSetColumnIndex(j * 3 + 0)) {
                   ImGui::TextUnformatted(to_string(options[idx].first).c_str());
                 }

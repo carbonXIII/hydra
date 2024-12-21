@@ -20,10 +20,14 @@ namespace hydra {
     /// Number of frames to buffer inputs without a prompt consuming them
     uint64_t BUFFER_FRAMES = 5;
 
-    unsigned BAR_HEIGHT = 50;
-    unsigned TRIE_ROW_COUNT = 5;
+    std::string_view FONT = "Monospace";
+    unsigned FONT_HEIGHT = 30;
 
-    unsigned WINDOW_HEIGHT = BAR_HEIGHT * (TRIE_ROW_COUNT + 1);
+    double ALPHA = 0.7;
+    unsigned BAR_HEIGHT = FONT_HEIGHT + 20;
+    unsigned TABLE_ROW_COUNT = 5;
+
+    unsigned WINDOW_HEIGHT = BAR_HEIGHT * (TABLE_ROW_COUNT + 1);
     unsigned WINDOW_WIDTH = 640; // Ignored unless NO_WAYLAND_EXTENSIONS defined
 
     hydra::Key LEADER = hydra::Key::Scancode(SDL_SCANCODE_ESCAPE);

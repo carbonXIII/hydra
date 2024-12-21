@@ -1,6 +1,7 @@
 find_package(fmt)
 find_package(SDL3)
 find_package(rapidfuzz)
+find_package(Fontconfig)
 
 add_library(hydra-shell STATIC
   shell.cpp
@@ -10,13 +11,15 @@ add_library(hydra-shell STATIC
   backend/foreign_toplevel_wrapper.cpp
   backend/layer_window.cpp
   backend/imgui.cpp
-  backend/imgui_config.cpp)
+  backend/imgui_config.cpp
+  backend/font.cpp)
 
 target_link_libraries(hydra-shell PRIVATE
   hydra-common
   wayland-ext
   rapidfuzz::rapidfuzz
-  fmt)
+  fmt
+  fontconfig)
 
 target_link_libraries(hydra-shell PUBLIC imgui) # FIXME
 target_include_directories(hydra-shell PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
