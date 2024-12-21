@@ -10,6 +10,7 @@
 
 #include <hydra/util/state_machine_impl.h>
 #include <hydra/util/trie.h>
+#include <window_manager.h>
 
 using namespace miral;
 
@@ -27,6 +28,18 @@ namespace hydra::server {
         return false;
       });
     }
+  }
+
+  bool ShellLauncher::matches(miral::ApplicationInfo const& app) {
+    if(auto session = weak_session.lock()) {
+      return session == app.application();
+    }
+
+    return false;
+  }
+
+  void ShellLauncher::set_window_manager(WindowManager* wm) {
+    this->wm = wm;
   }
 
   void ShellLauncher::stop() { shell.stop(); }
@@ -57,7 +70,8 @@ namespace hydra::server {
   enum States {
     IDLE,
     COMMAND,
-    LAUNCH
+    LAUNCH,
+    WINDOW_FIND,
   };
 
   auto ShellLauncher::idle() {
@@ -71,13 +85,16 @@ namespace hydra::server {
       NONE,
       QUIT,
       LAUNCH,
+      WINDOW_FIND,
     };
 
     static constexpr auto opt = [](std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
     hydra::util::Trie<Key, Option> tree {
       std::tuple{Key::Keycode(SDLK_Q), opt("Quit/logout session"),
         std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}},
-      std::tuple{Key::Keycode(SDLK_SPACE), opt("Launch application", LAUNCH)}
+      std::tuple{Key::Keycode(SDLK_SPACE), opt("Launch application", LAUNCH)},
+      std::tuple{Key::Keycode(SDLK_W), opt("Windows"),
+        std::tuple{Key::Keycode(SDLK_W), opt("Find window", WINDOW_FIND)}}
     };
 
     static constexpr auto show_node = [](auto* shell, auto const& node) {
@@ -112,6 +129,8 @@ namespace hydra::server {
               return States::IDLE;
             case LAUNCH:
               return States::LAUNCH;
+            case WINDOW_FIND:
+              return States::WINDOW_FIND;
             case NONE:
               show_node(&shell, *cur);
               return -1;
@@ -153,15 +172,41 @@ namespace hydra::server {
     };
   }
 
+  auto ShellLauncher::window_find() {
+    std::vector<std::weak_ptr<WindowManager::Metadata>> windows;
+    hydra::Search prompt;
+
+    if(wm) wm->locked_list_windows([&](std::weak_ptr<WindowManager::Metadata> weak_window) {
+      if(auto window = weak_window.lock()) {
+        windows.push_back(weak_window);
+        prompt.push_back(hydra::Option{(Option::value_t)prompt.size(), window->get_display_name()});
+      }
+    });
+
+    shell.show(std::move(prompt));
+
+    return [this,windows=std::move(windows)](auto res) -> std::size_t {
+      if(res >= 0 && res < windows.size() && wm) {
+        if(auto win = windows[res].lock(); win && wm) {
+          wm->locked_select_window(win);
+        }
+      }
+
+      return States::IDLE;
+    };
+  }
+
   ShellLauncher::ShellLauncher(MirRunner* runner, ExternalClientLauncher* launcher)
     : shell(true /* external input */),
       runner(runner),
       launcher(launcher),
+      wm(nullptr),
       state_machine(StateMachine::Create<
                     ShellLauncher,
                     hydra::util::State { States::IDLE, &ShellLauncher::idle },
                     hydra::util::State { States::COMMAND, &ShellLauncher::command },
-                    hydra::util::State { States::LAUNCH, &ShellLauncher::launch }
+                    hydra::util::State { States::LAUNCH, &ShellLauncher::launch },
+                    hydra::util::State { States::WINDOW_FIND, &ShellLauncher::window_find }
                     >(this))
   {
     Gio::init();

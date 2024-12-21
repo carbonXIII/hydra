@@ -1,5 +1,6 @@
 #pragma once
 
+#include <miral/application_info.h>
 #include <miral/runner.h>
 #include <miral/wayland_extensions.h>
 #include <miral/external_client.h>
@@ -13,6 +14,7 @@
 
 namespace hydra::util { template <typename Input> struct StateMachine; }
 namespace hydra::server {
+  struct WindowManager;
   struct ShellLauncher {
     ShellLauncher(miral::MirRunner* runner, miral::ExternalClientLauncher* launcher);
     ShellLauncher(ShellLauncher const&) = delete;
@@ -25,6 +27,8 @@ namespace hydra::server {
     }
 
     void enable_extensions(miral::WaylandExtensions& extensions);
+    bool matches(miral::ApplicationInfo const& app);
+    void set_window_manager(WindowManager* wm);
 
     void stop();
     bool show_commands();
@@ -37,11 +41,13 @@ namespace hydra::server {
     auto idle();
     auto command();
     auto launch();
+    auto window_find();
 
     hydra::shell::Shell shell;
 
     miral::MirRunner* runner;
     miral::ExternalClientLauncher* launcher;
+    WindowManager* wm;
 
     std::weak_ptr<mir::scene::Session> weak_session;
     std::mutex session_lock;
