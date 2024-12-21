@@ -37,7 +37,23 @@ namespace hydra {
       return BUFFER_FRAMES * std::chrono::duration_cast<Dur>(FRAME_TIMEOUT).count();
     }
 
+    struct [[nodiscard]] Handle {
+      Handle();
+      Handle(Handle const&) = delete;
+      Handle(Handle&&) = delete;
+      Handle& operator=(Handle&& o);
+      ~Handle();
+
+    protected:
+      friend Config;
+
+      Handle(bool active);
+
+      int active = false;
+    };
+
     static Config const& Get();
+    static Handle Override(Config const& config);
   };
 
   static constexpr Config base_config;
