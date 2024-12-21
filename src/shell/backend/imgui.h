@@ -4,8 +4,11 @@
 
 #include <utility>
 
+struct ImGuiStyle;
 namespace hydra::shell {
   struct Window;
+
+  void ImGuiLoadConfig(ImGuiStyle& style);
 
   struct FrameContext {
     FrameContext(Window* window);

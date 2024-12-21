@@ -21,6 +21,7 @@ namespace hydra::shell {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
+    ImGuiLoadConfig(ImGui::GetStyle());
     ImGui_ImplSDL3_InitForOpenGL(window->get(), gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
   }

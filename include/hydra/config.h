@@ -1,7 +1,12 @@
 #pragma once
 
+#include <chrono>
+
 namespace hydra {
   struct Config {
+    /// Time to display error messages
+    std::chrono::milliseconds ERROR_TIMEOUT { 1500 };
+
     unsigned BAR_HEIGHT = 50;
     unsigned TRIE_ROW_COUNT = 5;
 

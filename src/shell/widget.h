@@ -6,9 +6,9 @@
 #include <imgui/imgui.h>
 
 #include <hydra/types.h>
-#include <shell/table.h>
-#include <shell/search.h>
-#include <shell/statusline.h>
+#include <table.h>
+#include <search.h>
+#include <statusline.h>
 
 namespace hydra::shell {
   template <typename T>
