@@ -2,10 +2,13 @@
 
 #include <pthread.h>
 
+#include <tuple>
+
 #include <hydra/util/callback.h>
 #include <hydra/backend/layer_window.h>
 
 #include <hydra/util/state_machine_impl.h>
+#include <hydra/util/trie.h>
 
 using namespace miral;
 
@@ -49,7 +52,7 @@ namespace hydra::server {
     startup_cv.notify_all();
   }
 
-  enum State {
+  enum States {
     IDLE,
     COMMAND,
   };
@@ -62,28 +65,56 @@ namespace hydra::server {
 
   auto ShellLauncher::command() {
     enum Commands: Option::value_t {
+      NONE,
       QUIT,
     };
 
-    shell.show(hydra::Table{
-        std::pair{hydra::Key::Keycode(SDLK_Q), hydra::Option{std::size_t(Commands::QUIT), "Quit"}},
-      });
+    static constexpr auto opt = [](std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
+    hydra::util::Trie<Key, Option> tree {
+      std::tuple{Key::Keycode(SDLK_Q), opt("Quit/logout session"),
+        std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}}
+    };
 
-    return [this](auto res) -> std::size_t {
-      if(res < 0) {
-        auto key = hydra::Key::Raw(-res - 1);
-        shell.show_error(fmt::format("{} Undefined", to_string(key)));
-      } else {
-        switch(Commands(res)) {
-          case Commands::QUIT:
-            runner->stop();
-            break;
-          default:
-            break;
-        }
+    static constexpr auto show_node = [](auto* shell, auto const& node) {
+      shell->show(util::collect_as<hydra::Table>(node.items() | std::views::transform([](auto const& p) {
+        return std::pair {
+          p.first,
+          Option {Option::value_t(p.first.get()), p.second.name}
+        };
+      })));
+    };
+    show_node(&shell, tree.root());
+
+    std::string status = fmt::format("{} ", to_string(hydra::Config::Get().LEADER));
+    shell.show_status(status);
+
+    using node = std::optional<decltype(tree)::node_t>;
+    return [this,tree,cur=node{},status](auto res) mutable -> std::size_t {
+      if(!cur) {
+        cur = tree.root();
       }
 
-      return State::IDLE;
+      auto key = Key::Raw(res < 0 ? -res - 1 : res);
+      status = fmt::format("{}{} ", status, to_string(key));
+      shell.show_status(status);
+
+      if(res >= 0) {
+        if(auto next = cur->try_get(key)) {
+          cur = *next;
+          switch(Commands{(*cur)->value}) {
+            case QUIT:
+              this->runner->stop();
+              return States::IDLE;
+            case NONE:
+              show_node(&shell, *cur);
+              return -1;
+          }
+        }
+      } else {
+        shell.show_error(fmt::format("{} undefined", status));
+      }
+
+      return States::IDLE;
     };
   }
 
@@ -91,8 +122,8 @@ namespace hydra::server {
     : runner(runner),
       state_machine(StateMachine::Create<
                     ShellLauncher,
-                    hydra::util::State { State::IDLE, &ShellLauncher::idle },
-                    hydra::util::State { State::COMMAND, &ShellLauncher::command }
+                    hydra::util::State { States::IDLE, &ShellLauncher::idle },
+                    hydra::util::State { States::COMMAND, &ShellLauncher::command }
                     >(this))
   {
     runner->add_stop_callback([this](){ this->stop(); });
@@ -101,9 +132,9 @@ namespace hydra::server {
   bool ShellLauncher::show_commands() {
     bool ret = false;
     state_machine->lock([&ret](std::size_t state) -> std::size_t {
-      if(state == State::IDLE) {
+      if(state == States::IDLE) {
         ret = true;
-        return State::COMMAND;
+        return States::COMMAND;
       }
 
       return -1;

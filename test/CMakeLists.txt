@@ -19,3 +19,4 @@ function(add_test name source)
 endfunction()
 
 add_test(state_machine util/state_machine.cpp)
+add_test(trie util/trie.cpp)
