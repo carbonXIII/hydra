@@ -55,4 +55,5 @@ make server
 ```
 make server/wayland
 ```
-
+## Documentation
+Some development notes in [docs/dev_notes.pdf](docs/dev_notes.pdf)
