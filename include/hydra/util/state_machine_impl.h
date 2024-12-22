@@ -63,7 +63,7 @@ namespace hydra::util {
   };
 
   template <typename Input>
-  template <typename T, auto... states>
+  template <typename T, State... states>
   auto StateMachine<Input>::Create(auto&&... args) -> std::shared_ptr<StateMachine> {
     return std::make_shared<StateMachineImpl<Input, T, states...>>(std::forward<decltype(args)>(args)...);
   }

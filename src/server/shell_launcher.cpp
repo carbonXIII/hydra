@@ -81,7 +81,7 @@ namespace hydra::server {
     };
   }
 
-  auto ShellLauncher::command() {
+  namespace Commands {
     enum Commands: Option::value_t {
       NONE,
       QUIT,
@@ -92,8 +92,8 @@ namespace hydra::server {
       WINDOW_CLOSE,
     };
 
-    static constexpr auto opt = [](std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
-    hydra::util::Trie<Key, Option> tree {
+    auto opt(std::string_view name, Option::value_t value = NONE){ return Option{value, std::string{name}}; };
+    static const hydra::util::Trie<Key, Option> tree {
       std::tuple{Key::Keycode(SDLK_Q), opt("Quit/logout session"),
         std::tuple{Key::Keycode(SDLK_Q), opt("Quit", QUIT)}},
       std::tuple{Key::Keycode(SDLK_SPACE), opt("Launch application", LAUNCH)},
@@ -104,7 +104,7 @@ namespace hydra::server {
         std::tuple{Key::Keycode(SDLK_D), opt("Close window", WINDOW_CLOSE)}}
     };
 
-    static constexpr auto show_node = [](auto* shell, auto const& node) {
+    auto show_node(auto* shell, auto const& node) {
       shell->show(util::collect_as<hydra::Table>(node.items() | std::views::transform([](auto const& p) {
         return std::pair {
           p.first,
@@ -112,43 +112,41 @@ namespace hydra::server {
         };
       })));
     };
-    show_node(&shell, tree.root());
+  }
+
+  auto ShellLauncher::command() {
+    Commands::show_node(&shell, Commands::tree.croot());
 
     std::string status = fmt::format("{} ", to_string(Config::Get().LEADER));
     shell.show_status(status);
 
-    using node = std::optional<decltype(tree)::node_t>;
-    return [this,tree,cur=node{},status](auto res) mutable -> std::size_t {
-      if(!cur) {
-        cur = tree.root();
-      }
-
+    return [this,cur=Commands::tree.croot(),status](auto res) mutable -> std::size_t {
       auto key = Key::Raw(res < 0 ? -res - 1 : res);
       status = fmt::format("{}{} ", status, to_string(key));
       shell.show_status(status);
 
       if(res >= 0) {
-        if(auto next = cur->try_get(key)) {
+        if(auto next = cur.try_get(key)) {
           cur = *next;
-          switch(Commands{(*cur)->value}) {
-            case QUIT:
+          switch(cur->value) {
+            case Commands::QUIT:
               this->runner->stop();
               return States::IDLE;
-            case LAUNCH:
+            case Commands::LAUNCH:
               return States::LAUNCH;
-            case WINDOW_FIND:
+            case Commands::WINDOW_FIND:
               return States::WINDOW_FIND;
-            case WINDOW_NEXT:
+            case Commands::WINDOW_NEXT:
               if(wm) wm->locked_advance_window(1);
               return States::IDLE;
-            case WINDOW_PREV:
+            case Commands::WINDOW_PREV:
               if(wm) wm->locked_advance_window(-1);
               return States::IDLE;
-            case WINDOW_CLOSE:
+            case Commands::WINDOW_CLOSE:
               if(wm) wm->locked_close_active();
               return States::IDLE;
-            case NONE:
-              show_node(&shell, *cur);
+            case Commands::NONE:
+              Commands::show_node(&shell, cur);
               return -1;
           }
         }

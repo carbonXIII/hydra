@@ -32,7 +32,7 @@ namespace hydra::util {
       jump(under_lock(current()));
     }
 
-    template <typename T, auto... states>
+    template <typename T, State... states>
     static std::shared_ptr<StateMachine<Input>> Create(auto&&... args);
 
   protected:

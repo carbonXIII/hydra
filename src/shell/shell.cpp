@@ -129,8 +129,6 @@ namespace hydra::shell {
     }
 
     std::optional<Option::value_t> frame(Window& window, FrameContext& fc) {
-      auto frame_guard = fc.start_frame();
-
       fc.handle_events([this](const SDL_Event& e){
         handle_event(e);
       });
@@ -140,6 +138,8 @@ namespace hydra::shell {
       if(auto res = pop_result()) {
         return res;
       }
+
+      auto frame_guard = fc.start_frame();
 
       auto [active, repeat, age] = next_frame();
       if(!repeat) {
