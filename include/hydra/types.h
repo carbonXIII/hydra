@@ -45,7 +45,7 @@ namespace hydra {
       return SDL_GetKeyFromScancode(scancode(), SDL_KMOD_NONE, true);
     }
 
-    friend std::string to_string(const Key& key) {
+    friend std::string to_string(Key const& key) {
       switch(auto code = key.keycode()) {
         case SDLK_ESCAPE:
           return "ESC";
@@ -54,7 +54,7 @@ namespace hydra {
       }
     }
 
-    auto operator<=>(const Key&) const = default;
+    auto operator<=>(Key const&) const = default;
 
   protected:
     constexpr Key(uint32_t raw): raw(raw) {}

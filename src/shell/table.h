@@ -13,8 +13,8 @@
 
 namespace hydra::shell {
   struct TablePrompt {
-    TablePrompt(auto&& options, clock_t::time_point show_time = {})
-    : options(std::forward<decltype(options)>(options)),
+    TablePrompt(Table&& options, clock_t::time_point show_time = {})
+    : options(std::forward<Table&&>(options)),
       show_time(show_time) {
       auto cmp = [](auto&& l, auto&& r) { return l.first < r.first; };
       std::ranges::sort(this->options, cmp);
@@ -53,7 +53,7 @@ namespace hydra::shell {
           for(int i = 0; i < Config::Get().TABLE_ROW_COUNT; i++) {
             ImGui::TableNextRow();
             for(int j = 0; j < ncols; ++j) {
-              if(int idx = j * Config::Get().TABLE_ROW_COUNT + i; idx < options.size()) {
+              if(unsigned idx = j * Config::Get().TABLE_ROW_COUNT + i; idx < options.size()) {
                 if(ImGui::TableSetColumnIndex(j * 3 + 0)) {
                   ImGui::TextUnformatted(to_string(options[idx].first).c_str());
                 }

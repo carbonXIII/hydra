@@ -16,13 +16,13 @@ namespace hydra::shell {
   struct Window {
     struct Properties;
 
-    Window(const SDLContext&, Properties&& props);
+    Window(SDLContext const&, Properties&& props);
 
     SDL_Window* get();
     SDL_GLContext gl_context();
 
     operator SDL_Window*();
-    Window(const Window&) = delete;
+    Window(Window const&) = delete;
 
     virtual bool has_focus();
     virtual void set_focusable(bool val);
@@ -43,12 +43,12 @@ namespace hydra::shell {
     };
 
     std::unique_ptr<SDL_Window, SDL_Window_Deleter> window;
-    std::unique_ptr<std::remove_pointer<SDL_GLContext>::type, SDL_GLContext_Deleter> _gl_context;
+    std::unique_ptr<std::remove_pointer_t<SDL_GLContext>, SDL_GLContext_Deleter> _gl_context;
   };
 
   struct Window::Properties {
     Properties();
-    Properties(const Properties&) = delete;
+    Properties(Properties const&) = delete;
     Properties(Properties&& o);
     ~Properties();
 

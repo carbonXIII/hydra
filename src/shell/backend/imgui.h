@@ -21,9 +21,9 @@ namespace hydra::shell {
     private:
       friend struct FrameContext;
       Guard(FrameContext* parent);
-      Guard(const Guard&) = delete;
+      Guard(Guard const&) = delete;
       FrameContext* parent;
-      bool shown;
+      bool shown = false;
     };
 
     void handle_events(auto&& event_cb) {
@@ -41,7 +41,7 @@ namespace hydra::shell {
     void swap_frame(bool shown);
 
   private:
-    void handle_event(const SDL_Event& e);
+    void handle_event(SDL_Event const& e);
 
     Window* window;
   };

@@ -6,7 +6,7 @@ all: build test
 .PHONY: all
 
 build:
-	cmake -GNinja -B ./build/ -DCMAKE_BUILD_TYPE=Debug  .
+	cmake -GNinja -B ./build/ -DCMAKE_BUILD_TYPE=RelWithDebugInfo  .
 	cmake --build ./build/
 .PHONY: build
 
@@ -37,3 +37,6 @@ test/shell-example-debug:
 test:
 	cd build/test && (ctest || ctest --output-on-failure --rerun-failed)
 .PHONY: test
+
+tidy:
+	run-clang-tidy -p build -header-filter="hydra/(src|include).*" ./src/* ./include/* -quiet

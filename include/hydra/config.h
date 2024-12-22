@@ -49,7 +49,7 @@ namespace hydra {
 
       Handle(bool active);
 
-      int active = false;
+      bool active = false;
     };
 
     static Config const& Get();

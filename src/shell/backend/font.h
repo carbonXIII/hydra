@@ -5,7 +5,7 @@
 
 namespace hydra {
   struct FontConfig {
-    std::optional<std::string> match_font(const std::string& pattern_str);
+    std::optional<std::string> match_font(std::string const& pattern_str);
 
     static FontConfig& get() {
       static FontConfig fc;

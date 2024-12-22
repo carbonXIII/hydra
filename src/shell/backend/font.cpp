@@ -20,7 +20,7 @@ namespace hydra {
     FcFini();
   }
 
-  std::optional<std::string> FontConfig::match_font(const std::string& pattern_str) {
+  std::optional<std::string> FontConfig::match_font(std::string const& pattern_str) {
     Pattern pattern { FcNameParse(reinterpret_cast<const FcChar8*>(pattern_str.c_str())) };
     if(!pattern) return std::nullopt;
 

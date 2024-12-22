@@ -33,7 +33,7 @@ namespace hydra::shell {
 
   struct LayerShell {
     LayerShell(wl_display* display);
-    std::weak_ptr<LayerSurface> get_layer_surface(wl_surface* surface, shell::Layer layer, const std::string& nspace);
+    std::weak_ptr<LayerSurface> get_layer_surface(wl_surface* surface, shell::Layer layer, std::string const& nspace);
 
   private:
     CCZwlrLayerShellV1 self;

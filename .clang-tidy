@@ -1,0 +1,8 @@
+Checks: >
+  -*,
+  bugprone-*,
+  cppcoreguidlines-*,
+  -bugprone-narrowing-conversions,
+  -clang-diagnostic-error,
+  -bugprone-easily-swappable-parameters,
+

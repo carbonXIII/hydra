@@ -15,7 +15,7 @@ namespace hydra::util {
 
     static constexpr auto table = []() {
       std::array<Node, sizeof...(states)> ret;
-      ((ret[states.index] = states, false) || ...);
+      (void) ((ret[states.index] = states, false) || ...);
       return ret;
     }();
 

@@ -37,7 +37,7 @@ namespace hydra::shell {
       }
     }
 
-    void handle_event(const SDL_Event& e) {
+    void handle_event(SDL_Event const& e) {
       if(e.type == SDL_EVENT_QUIT) {
         is_done = true;
       } else if(!external_input && e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
@@ -129,7 +129,7 @@ namespace hydra::shell {
     }
 
     std::optional<Option::value_t> frame(Window& window, FrameContext& fc) {
-      fc.handle_events([this](const SDL_Event& e){
+      fc.handle_events([this](SDL_Event const& e){
         handle_event(e);
       });
 
@@ -189,7 +189,7 @@ namespace hydra::shell {
     self->show(SearchPrompt{std::forward<decltype(search)>(search)});
   }
 
-  void Shell::show(Table&& table, const clock_t::time_point& show_time) {
+  void Shell::show(Table&& table, clock_t::time_point const& show_time) {
     self->show(TablePrompt{std::forward<decltype(table)>(table), show_time});
   }
 
@@ -197,7 +197,7 @@ namespace hydra::shell {
     self->status.show(status);
   }
 
-  void Shell::show_status(std::string_view status, const clock_t::duration& duration) {
+  void Shell::show_status(std::string_view status, clock_t::duration const& duration) {
     self->status.show(status, duration);
   }
 

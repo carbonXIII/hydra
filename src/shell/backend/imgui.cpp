@@ -33,7 +33,7 @@ namespace hydra::shell {
   }
 
   FrameContext::Guard::Guard(FrameContext* parent)
-    : parent(parent), shown(false) {}
+    : parent(parent) {}
 
   FrameContext::Guard::~Guard() {
     parent->swap_frame(shown);
@@ -46,7 +46,7 @@ namespace hydra::shell {
     return Guard(this);
   }
 
-  void FrameContext::handle_event(const SDL_Event& e) {
+  void FrameContext::handle_event(SDL_Event const& e) {
     ImGui_ImplSDL3_ProcessEvent(&e);
   }
 

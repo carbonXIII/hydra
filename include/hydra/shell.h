@@ -19,11 +19,11 @@ namespace hydra::shell {
     bool done();
     void run(Window& window, Callback& callback);
 
-    void show(Table&& table, const clock_t::time_point& show_time = clock_t::now());
+    void show(Table&& table, clock_t::time_point const& show_time = clock_t::now());
     void show(Search&& search);
 
     void show_status(std::string_view msg);
-    void show_status(std::string_view msg, const clock_t::duration& duration);
+    void show_status(std::string_view msg, clock_t::duration const& duration);
     void show_error(std::string_view msg) { show_status(msg, hydra::Config::Get().ERROR_TIMEOUT); }
 
     bool wants_input();

@@ -37,7 +37,7 @@ namespace hydra::shell {
     return std::visit([](auto& p){ return p.should_draw(); }, prompt);
   }
 
-  static void handle_key(Prompt& prompt, const Key& key) {
+  static void handle_key(Prompt& prompt, Key const& key) {
     std::visit([&](auto& p){ p.handle_key(key); }, prompt);
   }
 

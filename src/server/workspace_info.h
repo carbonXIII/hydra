@@ -47,8 +47,8 @@ namespace hydra::server {
     }
 
   private:
-    bool is_pending_focus;
-    bool dirty;
+    bool is_pending_focus = false;
+    bool dirty = false;
     List windows;
 
     WindowPtr prune();

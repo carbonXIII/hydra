@@ -9,7 +9,7 @@
 
 namespace hydra::shell {
   struct LayerWindow: public Window {
-    LayerWindow(const SDLContext&, Window::Properties&& props);
+    LayerWindow(SDLContext const&, Window::Properties&& props);
     ~LayerWindow();
 
     void set_focusable(bool val) override;

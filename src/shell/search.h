@@ -15,8 +15,8 @@ namespace hydra::shell {
   struct SearchPrompt {
     SearchPrompt(auto&&... options)
     : options(std::forward<decltype(options)>(options)...),
-      filtered(util::collect(std::ranges::iota_view(0u, this->options.size()))),
-      cursor_idx(0) {
+      filtered(util::collect(std::ranges::iota_view(0u, this->options.size())))
+      {
       imgui_selection.UserData = this;
       imgui_selection.AdapterSetItemSelected = [](ImGuiSelectionExternalStorage* self, int idx, bool selected) {
         if(selected) {
@@ -116,7 +116,7 @@ namespace hydra::shell {
 
     std::string filter_str;
     std::vector<unsigned> filtered;
-    unsigned cursor_idx;
+    unsigned cursor_idx = 0;
 
     std::optional<Option::value_t> ret;
 

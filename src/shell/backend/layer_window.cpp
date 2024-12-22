@@ -17,8 +17,7 @@ namespace hydra::shell {
     Self(wl_display* display)
       : layer_shell(display),
         compositor(GetCompositor(display)),
-        foreign_toplevels(display),
-        fullscreen_count(0)
+        foreign_toplevels(display)
     {}
 
     LayerShell layer_shell;
@@ -30,7 +29,7 @@ namespace hydra::shell {
     bool exclusive;
     bool interactive;
 
-    int fullscreen_count;
+    int fullscreen_count = 0;
   };
 
   auto&& use_custom_role(Window::Properties&& props) {
@@ -44,7 +43,7 @@ namespace hydra::shell {
     return shell::KEYBOARD_INTERACTIVITY_EXCLUSIVE;
   }
 
-  LayerWindow::LayerWindow(const SDLContext& context, Window::Properties&& props)
+  LayerWindow::LayerWindow(SDLContext const& context, Window::Properties&& props)
     : Window(context, use_custom_role(std::forward<decltype(props)>(props))) {
     auto window_props = SDL_GetWindowProperties(get());
 

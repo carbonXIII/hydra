@@ -13,8 +13,9 @@ namespace hydra::shell {
 
     io.IniFilename = nullptr;
 
-    std::string font_path = *FontConfig::get().match_font(std::string(Config::Get().FONT));
-    io.Fonts->AddFontFromFileTTF(font_path.c_str(), Config::Get().FONT_HEIGHT);
+    if(auto font = FontConfig::get().match_font(std::string(Config::Get().FONT))) {
+      io.Fonts->AddFontFromFileTTF(font->c_str(), Config::Get().FONT_HEIGHT);
+    }
 
     // Bootstrap Dark style by Madam-Herta from ImThemes
     style.Alpha = Config::Get().ALPHA;

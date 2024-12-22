@@ -15,7 +15,7 @@ namespace hydra::shell {
     self(RegistryListener(display, &zwlr_layer_shell_v1_interface, 3).get_or_die<wl_resource>())
   {}
 
-  std::weak_ptr<LayerSurface> LayerShell::get_layer_surface(wl_surface* surface, shell::Layer layer, const std::string& nspace) {
+  std::weak_ptr<LayerSurface> LayerShell::get_layer_surface(wl_surface* surface, shell::Layer layer, std::string const& nspace) {
     wl_proxy* proxy = self.sendGetLayerSurface
       (
        reinterpret_cast<wl_resource*>(surface),

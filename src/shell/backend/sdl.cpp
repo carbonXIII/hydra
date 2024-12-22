@@ -45,7 +45,7 @@ namespace hydra::shell {
     SDL_Quit();
   }
 
-  Window::Window(const SDLContext&, Properties&& props) {
+  Window::Window(SDLContext const&, Properties&& props) {
     window.reset(SDL_CreateWindowWithProperties(props));
   }
 

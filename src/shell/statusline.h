@@ -18,7 +18,7 @@ namespace hydra::shell {
       status = s;
     }
 
-    void show(std::string_view s, const clock_t::duration& duration) {
+    void show(std::string_view s, clock_t::duration const& duration) {
       message = s;
       expiration = clock_t::now() + duration;
     }

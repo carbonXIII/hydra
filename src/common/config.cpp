@@ -33,7 +33,7 @@ namespace hydra {
     Stack(): stack({base_config}) {}
   };
 
-  Config::Handle::Handle(): active(false) {}
+  Config::Handle::Handle() = default;
   Config::Handle::Handle(bool active): active(active) {}
 
   Config::Handle& Config::Handle::operator=(Handle&& o) {

@@ -49,7 +49,7 @@ namespace hydra::server {
 
     miral::MirRunner* runner;
     miral::ExternalClientLauncher* launcher;
-    WindowManager* wm;
+    WindowManager* wm = nullptr;
 
     std::weak_ptr<mir::scene::Session> weak_session;
     std::mutex session_lock;

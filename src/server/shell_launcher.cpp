@@ -148,6 +148,9 @@ namespace hydra::server {
             case Commands::NONE:
               Commands::show_node(&shell, cur);
               return -1;
+            default:
+              // unreachable
+              break;
           }
         }
       } else {
@@ -214,7 +217,6 @@ namespace hydra::server {
     : shell(true /* external input */),
       runner(runner),
       launcher(launcher),
-      wm(nullptr),
       state_machine(StateMachine::Create<
                     ShellLauncher,
                     hydra::util::State { States::IDLE, &ShellLauncher::idle },

@@ -149,7 +149,7 @@ namespace hydra::server {
     std::unreachable();
   }
 
-  MetadataPtr WindowManager::next_focused(const int steps) {
+  MetadataPtr WindowManager::next_focused(int steps) {
     std::vector<MetadataPtr> windows;
     tools.for_each_window_in_workspace(default_workspace, [&](miral::Window const& win) {
       auto& win_info = tools.info_for(win);
@@ -161,11 +161,11 @@ namespace hydra::server {
 
     if(windows.empty()) return nullptr;
 
-    int cur = default_workspace.focused_last(windows.begin(), windows.end()) - windows.begin();
+    unsigned cur = default_workspace.focused_last(windows.begin(), windows.end()) - windows.begin();
 
-    int n = windows.size();
-    cur = std::clamp(cur, 0, n - 1);
-    int next = (cur + (steps % n) + n) % n;
+    unsigned n = windows.size();
+    steps = (steps % n) + n;
+    unsigned next = (cur + steps) % n;
 
     return windows[next];
   }

@@ -10,12 +10,12 @@ namespace hydra::util {
   template <typename Key, typename Value>
   struct Trie {
   private:
-    struct node_data_t;
-    template <typename T> struct base_node_t;
+    struct NodeData;
+    template <typename T> struct BaseNode;
 
   public:
-    using node_t = base_node_t<Trie*>;
-    using const_node_t = base_node_t<const Trie*>;
+    using node_t = BaseNode<Trie*>;
+    using const_node_t = BaseNode<Trie const*>;
 
     Trie() {
       nodes.resize(1);
@@ -24,7 +24,7 @@ namespace hydra::util {
     template <typename... Sub>
     Trie(Sub const&... args): Trie() {
       auto child = root();
-      (((child << args), false) || ...);
+      (void) (((child << args), false) || ...);
     }
 
     node_t root() {
@@ -52,39 +52,39 @@ namespace hydra::util {
 
   private:
     template <typename ptr_trie_t>
-    struct base_node_t;
+    struct BaseNode;
 
-    struct node_data_t {
+    struct NodeData {
       Value v;
       std::map<Key, std::size_t> kids;
     };
 
-    std::vector<node_data_t> nodes;
+    std::vector<NodeData> nodes;
   };
 
   template <typename Key, typename Value>
   template <typename ptr_trie_t>
-  struct Trie<Key, Value>::base_node_t {
+  struct Trie<Key, Value>::BaseNode {
   private:
     ptr_trie_t parent;
     std::size_t idx;
 
   protected:
     friend Trie<Key, Value>;
-    base_node_t(ptr_trie_t parent, std::size_t idx): parent(parent), idx(idx) {}
+    BaseNode(ptr_trie_t parent, std::size_t idx): parent(parent), idx(idx) {}
 
   public:
-    auto& self(this base_node_t self) { return self.parent->nodes[self.idx]; }
+    auto& self(this BaseNode self) { return self.parent->nodes[self.idx]; }
 
-    std::optional<base_node_t> try_get(const Key& key) const {
+    std::optional<BaseNode> try_get(Key const& key) const {
       if(auto it = self().kids.find(key); it != self().kids.end()) {
-        return base_node_t { parent, it->second };
+        return BaseNode { parent, it->second };
       }
 
       return std::nullopt;
     }
 
-    base_node_t operator[](const Key& key) {
+    BaseNode operator[](Key const& key) {
       if(auto ret = try_get(key)) {
         return *ret;
       }
@@ -94,23 +94,23 @@ namespace hydra::util {
 
     auto items() const {
       auto deref = [parent=this->parent] (const std::pair<Key, std::size_t>& p) {
-        return std::pair<Key, const Value&>{ p.first, *base_node_t { parent, p.second } };
+        return std::pair<Key, Value const&>{ p.first, *BaseNode { parent, p.second } };
       };
 
       return self().kids | std::views::transform(deref);
     }
 
     template <typename... Sub>
-    base_node_t operator<<(std::tuple<Key, Value, Sub...> const& args) {
+    BaseNode operator<<(std::tuple<Key, Value, Sub...> const& args) {
       std::apply([this](Key const& key, Value const& value, Sub const&... args) {
         auto child = this->operator[](key);
         *child = value;
-        (((child << args), false) || ...);
+        (void) (((child << args), false) || ...);
       }, args);
       return *this;
     }
 
-    base_node_t operator<<(std::tuple<Key, Value> const& args) {
+    BaseNode operator<<(std::tuple<Key, Value> const& args) {
       std::apply([this](Key const& key, Value const& value) {
         auto child = this->operator[](key);
         *child = value;

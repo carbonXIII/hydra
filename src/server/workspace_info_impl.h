@@ -6,7 +6,7 @@
 namespace hydra::server {
   template <typename Workspace, typename Window>
   WorkspaceInfoImpl<Workspace, Window>::WorkspaceInfoImpl(Workspace handle):
-    is_pending_focus(false), dirty(false), handle(handle) {}
+    handle(handle) {}
 
   template <typename Workspace, typename Window>
   void WorkspaceInfoImpl<Workspace, Window>::place_new_window(WorkspaceInfoImpl::WindowPtr& win) {
