@@ -1,5 +1,5 @@
 **/build/
 **/.cache/
 **/.ccls-cache/
-**/.local.env
+**/.env
 ./compile_commands.json

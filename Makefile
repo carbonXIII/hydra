@@ -1,12 +1,16 @@
+.env:; touch $@
+include .env
+
 include scripts/Makefile
 
-ARGS=--enable-x11=true --font="Source Code Pro"
+ARGS?=
+CMAKE_ARGS?=
 
 all: build test
 .PHONY: all
 
 build:
-	cmake -GNinja -B ./build/ -DCMAKE_BUILD_TYPE=RelWithDebugInfo  .
+	cmake -B ./build/ ${CMAKE_ARGS} .
 	cmake --build ./build/
 .PHONY: build
 
@@ -40,3 +44,10 @@ test:
 
 tidy:
 	run-clang-tidy -p build -header-filter="hydra/(src|include).*" ./src/* ./include/* -quiet
+
+dist:
+	test -d build/dist/.git || git clone --no-origin --single-branch -- $(shell pwd) build/dist/
+	cd build/dist && rm -rf .git/rebase-merge; git reset --hard @; \
+	git fetch $(shell pwd) && git reset --hard FETCH_HEAD
+	rm -rf build/hydra.tar.gz; tar --dereference -czvf build/hydra.tar.gz -C build/dist/ .
+.PHONY: dist
