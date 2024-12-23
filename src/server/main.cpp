@@ -33,7 +33,9 @@ int main(int argc, char const* argv[]) {
       std::in_place_type<mir::optional_value<std::string> const&>,
       [](hydra::Config& config, auto const& leader) {
         if(leader.is_set()) {
-          config.LEADER = hydra::Key::String(leader.value().c_str());
+          if(auto key = hydra::Key::String(leader.value().c_str()); key.get() != 0) {
+            config.LEADER = key;
+          }
         }
       },
     },

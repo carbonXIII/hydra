@@ -38,9 +38,9 @@ For more details about the build targets, see `Makefile` and `CMakeLists.txt`
 ```
 hydra --enable-x11
 ```
-To use a different leader key (by default Escape), use the `--leader` option:
+To use a different leader key (by default "Left Gui"), use the `--leader` option:
 ```
-hydra --leader "Left Gui" --enable-x11
+hydra --leader "Escape" --enable-x11
 ```
 
 See `hydra --help` for more details.

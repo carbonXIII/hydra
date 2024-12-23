@@ -30,7 +30,7 @@ namespace hydra {
     unsigned WINDOW_HEIGHT = BAR_HEIGHT * (TABLE_ROW_COUNT + 1);
     unsigned WINDOW_WIDTH = 640; // Ignored unless NO_WAYLAND_EXTENSIONS defined
 
-    hydra::Key LEADER = hydra::Key::Scancode(SDL_SCANCODE_ESCAPE);
+    hydra::Key LEADER = hydra::Key::Scancode(SDL_SCANCODE_LGUI);
 
     template <typename Dur>
     constexpr auto buffer_timeout() const {
